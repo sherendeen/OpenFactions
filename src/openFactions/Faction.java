@@ -3,6 +3,11 @@ package openFactions;
 import java.util.ArrayList;
 import java.util.Date;
 
+/**
+ * 
+ * @author Seth G. R. Herendeen [inivican]
+ *
+ */
 public class Faction {
 
 	private String name;
