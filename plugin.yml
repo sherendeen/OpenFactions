@@ -1,0 +1,11 @@
+name: OpenFactions
+version: 0.1
+main: openFactions.CustomNations
+authors: [ZettaX, Inivican]
+description: A better, more modular version of factions
+commands:
+   of:
+      description: Main command.
+      usage: 
+      permission: of.main
+      permission-message: You're not allowed to use this command.
