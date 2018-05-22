@@ -17,7 +17,7 @@ public class Commands implements CommandExecutor{
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
 		if(command.getName() == "of") {
-			sender.sendMessage("oof my dude");
+			sender.sendMessage("oof mein dude");
 			return true;
 		}
 		// TODO Add commands
