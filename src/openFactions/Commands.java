@@ -21,7 +21,7 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		if(command.getName().equalsIgnoreCase("of")) {
 			if(extraArguments.length < 1) {
-				//TODO: Add list of commands
+				//TODO: Add list of commands, kinda like a /help for our plugin
 				return false;
 			}
 			else if(extraArguments[0].equalsIgnoreCase("create")) {
