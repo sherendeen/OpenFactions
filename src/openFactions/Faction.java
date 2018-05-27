@@ -20,7 +20,11 @@ public class Faction {
 		//TODO: Save parameters to file once a new faction object is created
 		
 	}
-	
+	/**
+	 * Constructor for faction that doesn't assume too much of the user
+	 * @param name the name of the faction
+	 * @param personWhoCreatedTheFaction self commenting, self explainatory
+	 */
 	public Faction(String name, String personWhoCreatedTheFaction) {
 		this.dateCreated = new Date();
 		this.members.add(personWhoCreatedTheFaction);
