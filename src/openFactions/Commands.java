@@ -16,7 +16,7 @@ public class Commands implements CommandExecutor{
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
-		if(command.getName() == "of") {
+		if(command.getName().equalsIgnoreCase("of")) {
 			sender.sendMessage("oof my dude");
 			return true;
 		}
