@@ -23,7 +23,7 @@ public class Faction {
 	/**
 	 * Constructor for faction that doesn't assume too much of the user
 	 * @param name the name of the faction
-	 * @param personWhoCreatedTheFaction self commenting, self explainatory
+	 * @param personWhoCreatedTheFaction self commenting, self explanatory
 	 */
 	public Faction(String name, String personWhoCreatedTheFaction) {
 		this.dateCreated = new Date();
