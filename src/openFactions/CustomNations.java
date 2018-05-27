@@ -18,6 +18,7 @@ public class CustomNations extends JavaPlugin{
 		this.getCommand("of").setExecutor(executor);
 		//TODO: Run necessary methods
 	}
+	
 	//////////
 	
 	

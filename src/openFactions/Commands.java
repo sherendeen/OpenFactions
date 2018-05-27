@@ -3,6 +3,7 @@ package openFactions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 import openFactions.CustomNations;
 
@@ -16,8 +17,9 @@ public class Commands implements CommandExecutor{
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
+		Player player = (Player)sender;
 		if(command.getName().equalsIgnoreCase("of")) {
-			sender.sendMessage("oof my dude");
+			player.sendMessage("oof my dude");
 			return true;
 		}
 		// TODO Add commands
