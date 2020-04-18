@@ -53,6 +53,8 @@ public class Faction implements Serializable {
 	public Faction(String name, String personWhoCreatedTheFaction) {
 		this.dateCreated = new Date().toString();
 		this.members.add(personWhoCreatedTheFaction);
+		
+		this.serialUUID = UUID.randomUUID();
 	}
 	
 	/**
