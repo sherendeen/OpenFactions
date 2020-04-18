@@ -1,5 +1,5 @@
 name: OpenFactions
-version: 0.1
+version: 0.2.1
 main: openFactions.CustomNations
 authors: [ZettaX, Inivican]
 description: A better, more modular version of factions

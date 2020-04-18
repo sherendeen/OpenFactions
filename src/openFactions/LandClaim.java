@@ -1,30 +1,33 @@
 package openFactions;
 
-import net.minecraft.server.v1_12_R1.Chunk;
-import net.minecraft.server.v1_12_R1.World;
+import org.bukkit.Chunk;
 
-/**
- * 
- * 
- *
- */
-public class LandClaim extends Chunk {
+public class LandClaim {
+
+	private Chunk claimedChunk;
+	private String claimDescriptor;
 	
-	private double x;
-	private double y;
-	
-	public LandClaim(World world, int i, int j) {
-		super(world, i, j);
-		this.x = x;
-		this.y = y;
+	/**
+	 * Empty constructor; does nothing
+	 */
+	public LandClaim() {
+		
 	}
 	
-	public double getChunkX() {
-		return this.x;
+	public LandClaim(Chunk claimedChunk) {
+		this.claimedChunk = claimedChunk;
 	}
 	
-	public double getChunkY() {
-		return this.y;
+	public void setClaimedChunk(Chunk claimedChunk) {
+		this.claimedChunk = claimedChunk;
+	}
+	
+	public Chunk getClaimedChunk() {
+		return this.claimedChunk;
+	}
+	
+	public void setClaimDescriptor(String claimDescriptor) {
+		this.claimDescriptor = claimDescriptor;
 	}
 	
 }

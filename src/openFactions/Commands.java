@@ -18,7 +18,7 @@ public class Commands implements CommandExecutor{
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
-		Player player = (Player) sender;
+		//Player player = (Player) sender;
 		if(command.getName().equalsIgnoreCase("of")) {
 			if(extraArguments.length < 1) {
 				//TODO: Add list of commands, kinda like a /help for our plugin
@@ -26,12 +26,25 @@ public class Commands implements CommandExecutor{
 			}
 			else if(extraArguments[0].equalsIgnoreCase("create")) {
 				//TODO: create faction
-				player.sendMessage(ChatColor.RED + "IT'S NOT WORKING YET YOU NIBBRARIAN");
+				//player.sendMessage(ChatColor.RED + "Attempting to create faction " + extraArguments[1]);
+				System.out.println("Attempting to create faction");
+				
+				
+				Faction faction = new Faction(extraArguments[1], sender.getName());
+				Faction.serialize(faction, "faction_"+faction.getSerialUUID()+".fbin");
+				CustomNations.factions.add(faction);
+				
 				return true;
 			}
-			player.sendMessage("oof my dude");
+			//player.sendMessage("oof my dude");
 			return true;
 		}
+//		maybe make use of switch block for commands in the future
+//		switch(command.getName().toLowerCase())
+//		{
+//			
+//		}
+		
 		
 		return false;
 
