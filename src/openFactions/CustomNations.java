@@ -1,6 +1,21 @@
-package openFactions;
+/** 
+Copyright (C) 2018-2020 Seth Herendeen; Samuel Inciarte
 
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+package openFactions;
+**/
+package openFactions;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.io.File;
 import java.util.ArrayList;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,6 +28,7 @@ public class CustomNations extends JavaPlugin{
 	
 	public static ArrayList<Faction> factions = new ArrayList<Faction>(); 
 	
+	
 	//TODO: Add file return functions for configuration purposes
 	
 	@Override
@@ -20,9 +36,39 @@ public class CustomNations extends JavaPlugin{
 		
 		
 		this.getCommand("of").setExecutor(new Commands(this));
+
+		ArrayList<String> paths = new ArrayList<String>();
+		
+		try {
+			Files.list(new File(System.getProperty("user.dir")).toPath()).forEach(path ->{
+				
+				if (path.toAbsolutePath().toString().endsWith(".fbin")) {
+					System.out.println("*" + path);
+					paths.add(path.toAbsolutePath().toString());
+				}
+				
+			});
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Attempting to deserialize...");
+		for (int i = 0; i < paths.size(); i++ ) {
+			CustomNations.factions.add(Faction.deserialize(paths.get(i)));
+		}
+			
 		
 		
 		
+	}
+
+
+	public static void deleteFactionSave(String autoFileName) {
+		File file = new File(autoFileName);
+		if(file.exists()) {
+			boolean b = file.delete();
+			System.out.println(autoFileName + " deletion: " + b);
+		}
 	}
 	
 	//////////

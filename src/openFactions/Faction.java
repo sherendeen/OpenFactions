@@ -1,3 +1,14 @@
+//Copyright 2018-2020
+//This program is free software: you can redistribute it and/or modify
+//it under the terms of the GNU General Public License as published by
+//the Free Software Foundation, either version 3 of the License, or
+//(at your option) any later version.
+//
+//This program is distributed in the hope that it will be useful,
+//but WITHOUT ANY WARRANTY; without even the implied warranty of
+//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//GNU General Public License for more details.
+
 package openFactions;
 
 import java.io.FileInputStream;
@@ -83,7 +94,7 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Nation [name=" + name + ", dateCreated=" + dateCreated + ", members=" + members + ", claimList="
+		return "Nation [name=" + name + ", dateCreated=" + dateCreated + ", members=" + returnListOfNames(members) + ", claimList="
 				+ claimList + ", serialUUID=" + serialUUID + "]";
 	}
 
@@ -116,6 +127,31 @@ public class Faction implements Serializable {
 	public ArrayList<LandClaim> getClaims() {
 		return claimList;
 	}
+	
+	public void setClaims(ArrayList<LandClaim> claims) {
+		this.claimList = claims;
+	}
+	
+	/**
+	 * Adds a new claim to the list of claims
+	 * Doesn't check validity of claim
+	 * @param claim faction claim in question
+	 */
+	public void addClaim(LandClaim claim) {
+		this.claimList.add(claim);
+	}
+	
+	public void removeClaim(LandClaim claim) {
+		this.claimList.remove(claim);
+	}
+	
+	public void addMember(UUID uuid) {
+		this.members.add(uuid);
+	}
+	
+	public void removeMember(UUID uuid) {
+		this.members.remove(uuid);
+	}
 
 	public static Faction makeTestFaction() {
 
@@ -125,9 +161,13 @@ public class Faction implements Serializable {
 		
 		Faction fac = new Faction("Testificate", UUID.fromString("622440c0-2638-4c18-9b41-e99adc00683d"));
 		fac.members.add(UUID.fromString("5b6692b5-0b67-49d6-bfcc-3bf4a04a2c72"));
-		fac.members.add(UUID.fromString("cff474e0-cdad-4076-bafa-d1daa0d0d8d5"));
+	//	fac.members.add(UUID.fromString("cff474e0-cdad-4076-bafa-d1daa0d0d8d5"));
 		
 		return fac;
+	}
+	
+	public String getAutoFileName() {
+		return "faction_" + getSerialUUID() + "_.fbin";
 	}
 
 	/**
@@ -174,8 +214,6 @@ public class Faction implements Serializable {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-		} finally {
-			System.out.println("Deserialization of the faction object from [" + fileName + "] did not go well.");
 		}
 
 		return faction;
@@ -212,6 +250,55 @@ public class Faction implements Serializable {
 		
 		return null;
 	}
+	
+	public static ArrayList<String> returnListOfNames(ArrayList<UUID> uuids) {
+		ArrayList<String> names = new ArrayList<String>();
+		
+		for ( int i = 0 ; i < uuids.size(); i++) {
+			names.add( Commands.getPlayerNameFromUuid(uuids.get(i)));
+		}
+		
+		
+		
+		return names;
+	}
+	
+	/**
+	 * 
+	 * @param player name display string
+	 * @return returns true if the player is in a faction. Returns false if not.
+	 */
+	public static boolean isPlayerInAnyFaction(String name) {
+		
+		UUID uuid = Commands.getUuidFromPlayerName(name);
+		
+		boolean result = false;
+		
+		for (Faction fac : CustomNations.factions) {
+			result = isPlayerInSpecifiedFaction(uuid, fac);
+		}
+		
+		return result;
+		
+	}
+	
+	/**
+	 * 
+	 * @param uuid player UUID
+	 * @param faction faction object
+	 * @return whether or not the specified uuid is in the faction
+	 */
+	public static boolean isPlayerInSpecifiedFaction(UUID uuid, Faction faction) {
+		if (faction != null) {
+			for (int i = 0; i < faction.getMembers().size(); i++ ) {
+				if (faction.getMembers().get(i).equals(uuid)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	
 	
 
