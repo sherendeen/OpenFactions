@@ -194,8 +194,10 @@ public class Commands implements CommandExecutor{
 			
 			sender.sendMessage("--- Land claim ownership ---");
 			for(Faction fac : facs) {
+				
 				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
-				sender.sendMessage("Claimed by "+ fac.getName() + ". Description: "+lc.getClaimDescriptor()+".");
+				
+				sender.sendMessage("Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
 			}
 			
 			return true;
@@ -220,9 +222,12 @@ public class Commands implements CommandExecutor{
 		//if player is in a faction
 		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
-			for (int i = 0; i < fac.getClaims().size(); i++) {
-				fac.removeClaim( fac.getClaims().get(i) );
+			
+			for (LandClaim lc : fac.getClaims()) {
+				fac.removeClaim(lc);
 			}
+			sender.sendMessage("You have unclaimed this all land claims.");
+			Faction.serialize(fac, fac.getAutoFileName());
 			return true;
 		}
 		
@@ -264,6 +269,7 @@ public class Commands implements CommandExecutor{
 				if ( landClaim.equals(lc) ) {
 					fac.removeClaim(lc);
 					sender.sendMessage("You have unclaimed this land claim.");
+					Faction.serialize(fac, fac.getAutoFileName());
 					return true;
 				}
 			}
@@ -311,6 +317,8 @@ public class Commands implements CommandExecutor{
 				return false;
 			} else {
 				fac.addClaim(new LandClaim(chunk));
+				sender.sendMessage("You have successfully claimed this chunk.");
+				Faction.serialize(fac, fac.getAutoFileName());
 			}
 			
 		}
