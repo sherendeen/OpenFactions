@@ -217,7 +217,8 @@ public class LandClaim implements Serializable {
 	
 	/**
 	 * Since we can't serialize chunks, we must serialize chunk coordinates.
-	 * Use of this method is necessary so that we can re-correlate chunks with coordinates upon startup
+	 * Use of this method is necessary so that we can
+	 *  re-correlate chunks with coordinates upon startup
 	 * @param x 
 	 * @param z
 	 * @param pluginRef
