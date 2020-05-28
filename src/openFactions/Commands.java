@@ -158,10 +158,15 @@ public class Commands implements CommandExecutor{
 					return false; 
 				}
 				Faction faction1 = Faction.returnFactionThatPlayerIsIn(player.getUniqueId()); 
+				if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Faction.getFactionByFactionName(faction1.getName()) == null) {
+					sender.sendMessage("That faction name is invalid!");
+					return true;
+				}
 				String faction1Name = faction1.getName(); 
 				faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], relationshipTypes.valueOf(extraArguments[2]));
+				Bukkit.broadcastMessage(faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
 				
-				return false; 
+				return true; 
 			case "showrelations":
 				
 				if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
@@ -170,6 +175,7 @@ public class Commands implements CommandExecutor{
 				}
 				Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
 				sender.sendMessage(Faction.getRelationshipString(fac2));
+				return true;
 			//unfortunately creating factions with players that have
 			//never joined before 
 			//does not work well
