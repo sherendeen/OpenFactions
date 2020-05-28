@@ -21,6 +21,17 @@ import org.bukkit.entity.Player;
 
 import openFactions.CustomNations;
 
+enum Cmd {
+	CLAIM,
+	CREATE,
+	JOIN,
+	LIST,
+	LEAVE,
+	SHOW,
+	UNCLAIM,
+	WHOIS
+}
+
 public class Commands implements CommandExecutor{
 	
 	CustomNations plugin;
@@ -70,6 +81,7 @@ public class Commands implements CommandExecutor{
 					for ( Faction fac : CustomNations.factions) {
 						if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
 							fac.addMember(player.getUniqueId());
+							sender.sendMessage("You have joined " + fac.getName()+".");
 							return true;
 						}
 						
@@ -95,10 +107,11 @@ public class Commands implements CommandExecutor{
 				
 				if (fac != null) {
 					fac.removeMember(plUuid);
-					
+					pl.sendMessage("You have left " + fac.getName() + ".");
 					//if you are the last member of the faction
 					//delete the faction
 					if ( fac.getMembers().size() < 1 ) {
+						pl.sendMessage("You have disbanded "+fac.getName()+".");
 						CustomNations.factions.remove(fac);
 						CustomNations.deleteFactionSave(fac.getAutoFileName());
 						return true;
@@ -114,17 +127,19 @@ public class Commands implements CommandExecutor{
 				
 			case "whois":
 				
-				Faction fac1 = Faction.returnFactionThatPlayerIsIn(
-						Commands.getUuidFromPlayerName(extraArguments[1])
-						);
-				
-				if (fac1 != null) {
-					sender.sendMessage( fac1.toString() ); 
-					return true;
-				} else {
-					sender.sendMessage(extraArguments[1] 
-							+ " is either not in a faction or is not a real player.");
-					return false;
+				UUID uuid = getUuidFromPlayerName(extraArguments[1]);
+				if (uuid != null) {
+					
+					Faction fac1 = Faction.returnFactionThatPlayerIsIn(uuid);
+					
+					if (fac1 != null) {
+						sender.sendMessage( fac1.toString() ); 
+						return true;
+					} else {
+						sender.sendMessage(extraArguments[1] 
+								+ " is either not in a faction or is not a real player.");
+						return false;
+					}
 				}
 
 			case "show":
@@ -140,16 +155,16 @@ public class Commands implements CommandExecutor{
 			//unfortunately creating factions with players that have
 			//never joined before 
 			//does not work well
-			case "maketest":
-			case "createtest":
-				if (player.isOp()) {
-					Faction fac11 = Faction.makeTestFaction();
-					CustomNations.factions.add(fac11);
-					Faction.serialize(fac11, fac11.getAutoFileName());
-					return true;
-				} else {
-					return false;
-				}
+//			case "maketest":
+//			case "createtest":
+//				if (player.isOp()) {
+//					Faction fac11 = Faction.makeTestFaction();
+//					CustomNations.factions.add(fac11);
+//					Faction.serialize(fac11, fac11.getAutoFileName());
+//					return true;
+//				} else {
+//					return false;
+//				}
 				
 			default:
 				return true;
