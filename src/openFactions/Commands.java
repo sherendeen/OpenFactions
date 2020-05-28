@@ -78,7 +78,7 @@ public class Commands implements CommandExecutor{
 				if (Faction.isPlayerInAnyFaction(sender.getName())) {
 					sender.sendMessage("You cannot join a faction as you are already in one!");
 				} else {
-					for ( Faction fac : CustomNations.factions) {
+					for (Faction fac : CustomNations.factions) {
 						if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
 							fac.addMember(player.getUniqueId());
 							sender.sendMessage("You have joined " + fac.getName()+".");
@@ -151,7 +151,25 @@ public class Commands implements CommandExecutor{
 					}
 				}
 				return false;
+			case "setrelation":
 				
+				if(Faction.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
+					sender.sendMessage("You are not in a faction!");
+					return false; 
+				}
+				Faction faction1 = Faction.returnFactionThatPlayerIsIn(player.getUniqueId()); 
+				String faction1Name = faction1.getName(); 
+				faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], relationshipTypes.valueOf(extraArguments[2]));
+				
+				return false; 
+			case "showrelations":
+				
+				if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
+					sender.sendMessage(extraArguments[1] + " is not a real faction!");
+					return false;
+				}
+				Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
+				sender.sendMessage(Faction.getRelationshipString(fac2));
 			//unfortunately creating factions with players that have
 			//never joined before 
 			//does not work well

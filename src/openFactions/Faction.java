@@ -20,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 import java.io.File;
 
@@ -28,14 +29,24 @@ import java.io.File;
  * @author Seth G. R. Herendeen [inivican]
  *
  */
+
+enum relationshipTypes {
+	NEUTRAL, 
+	ALLY,
+	ENEMY,
+	TRUCE,
+	LORD,
+	VASSAL	
+}
+
 public class Faction implements Serializable {
 
 	private String name;
 	private String dateCreated;
 //	private ArrayList<String> members = new ArrayList<String>();
-	
+
 	private ArrayList<UUID> members = new ArrayList<UUID>();
-	
+	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
 	private ArrayList<LandClaim> claimList = new ArrayList<LandClaim>();
 	private UUID serialUUID;
 
@@ -80,6 +91,34 @@ public class Faction implements Serializable {
 	 */
 	public UUID getSerialUUID() {
 		return this.serialUUID;
+	}
+	/**
+	 * Returns a string representation of the relationships that a faction currently has.
+	 * @param faction
+	 * @return {Key Value}, {Key Value} string which equals {factionName relationship}, {factionName relationship}
+	 * @author ZettaX
+	 */
+	public static String getRelationshipString(Faction faction) {	
+		return faction.relationships.toString();
+	}
+	public static String getRelationshipTypeString(Faction faction) {
+		return faction.relationships.get(faction.getName()).toString();
+	}
+	public static relationshipTypes getRelationshipType(Faction faction) {
+		return faction.relationships.get(faction.getName());
+	}
+	/**
+	 * Sets a relationship between factions as a hashmap.
+	 * @param faction1Name The faction name of the one setting the relationship
+	 * @param faction2Name The faction name of the faction being set a relationship to
+	 * @param type Enum relationshipTypes which currently has 6 values, ALLY, NEUTRAL, ENEMY, TRUCE, VASSAL, LORD
+	 */
+	public void setRelationshipByFactionName(String faction1Name, String faction2Name, relationshipTypes type) {
+		if(Faction.getFactionByFactionName(faction1Name) == null || Faction.getFactionByFactionName(faction2Name) == null) {
+			return;
+		}
+		Faction.getFactionByFactionName(faction1Name).relationships.put(faction2Name, type);
+		Faction.getFactionByFactionName(faction2Name).relationships.put(faction1Name, type);
 	}
 
 	/**
@@ -298,7 +337,16 @@ public class Faction implements Serializable {
 		}
 		return false;
 	}
-	
+	public static Faction getFactionByFactionName(String name) {
+		for ( Faction faction1 : CustomNations.factions) {
+			if (faction1.getName().equalsIgnoreCase(name)) {
+				return faction1;
+			}
+		
+		}
+		return null;
+		
+	}
 	
 	
 
