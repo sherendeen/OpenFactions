@@ -11,12 +11,15 @@
 
 package openFactions;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_15_R1.CraftChunk;
 import org.bukkit.entity.Player;
 
 import openFactions.CustomNations;
@@ -27,8 +30,10 @@ enum Cmd {
 	JOIN,
 	LIST,
 	LEAVE,
+	OWNS,
 	SHOW,
 	UNCLAIM,
+	UNCLAIMALL,
 	WHOIS
 }
 
@@ -54,7 +59,11 @@ public class Commands implements CommandExecutor{
 		if(command.getName().equalsIgnoreCase("of") && extraArguments.length > 0) {
 			
 			switch (extraArguments[0].toLowerCase()) {
-			
+				
+			case "claim":
+				//Keeping things neat by putting the bulk of the code outside this case block
+				return claimLand(sender,command,extraArguments);
+				
 			case "create":
 				//player.sendMessage(ChatColor.RED + "Attempting to create faction " + extraArguments[1]);
 				System.out.println("Attempting to create faction");
@@ -92,7 +101,8 @@ public class Commands implements CommandExecutor{
 				return false;
 				
 			case "list":
-				
+				//TODO: list faction names and number of members
+				//instead of showing entire toString() for each faction
 				sender.sendMessage("List of factions - Output");
 				
 				for ( int i = 0 ; i < CustomNations.factions.size(); i++ ) {
@@ -121,9 +131,17 @@ public class Commands implements CommandExecutor{
 					sender.sendMessage("You are not in a real faction!");
 					return false;
 				}
+			case "owns":
 				
+				return returnWhoOwns(sender);
 				
+			case "unclaim":
 				
+				return unclaimLand(sender,command,extraArguments);
+				
+			case "unclaimall":
+				
+				return unclaimAllLand(sender);
 				
 			case "whois":
 				
@@ -145,6 +163,7 @@ public class Commands implements CommandExecutor{
 			case "show":
 				
 				for ( Faction faction1 : CustomNations.factions) {
+					//must be bugged
 					if (faction1.getName().equalsIgnoreCase(extraArguments[1])) {
 						sender.sendMessage(faction1.toString());
 						return true;
@@ -152,7 +171,7 @@ public class Commands implements CommandExecutor{
 				}
 				return false;
 			case "setrelation":
-				
+				//TODO: create method(s) from this
 				if(Faction.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
 					sender.sendMessage("You are not in a faction!");
 					return false; 
@@ -168,7 +187,8 @@ public class Commands implements CommandExecutor{
 				
 				return true; 
 			case "showrelations":
-				
+				//TODO: create relevant method for show relations
+          //TODO: don't require all caps for input. Suggestion: use toLower
 				if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
 					sender.sendMessage(extraArguments[1] + " is not a real faction!");
 					return false;
@@ -176,20 +196,7 @@ public class Commands implements CommandExecutor{
 				Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
 				sender.sendMessage(Faction.getRelationshipString(fac2));
 				return true;
-			//unfortunately creating factions with players that have
-			//never joined before 
-			//does not work well
-//			case "maketest":
-//			case "createtest":
-//				if (player.isOp()) {
-//					Faction fac11 = Faction.makeTestFaction();
-//					CustomNations.factions.add(fac11);
-//					Faction.serialize(fac11, fac11.getAutoFileName());
-//					return true;
-//				} else {
-//					return false;
-//				}
-				
+          
 			default:
 				return true;
 			}
@@ -199,6 +206,158 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean returnWhoOwns(CommandSender sender) {
+		
+		Player player ;
+		if ( !( sender instanceof Player )) {
+			player = null;
+		} else {
+			player = (Player) sender;
+		}
+		
+		Chunk chunk = player.getLocation().getChunk();
+		
+		if ( LandClaim.isSpecifiedChunkInsideAnyFaction( chunk)) {
+			
+			ArrayList<Faction> facs = LandClaim.returnFactionObjectsWhereChunkIsFoundIn(chunk);
+			
+			sender.sendMessage("--- Land claim ownership ---");
+			for(Faction fac : facs) {
+				
+				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
+				
+				sender.sendMessage("Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
+			}
+			
+			return true;
+			
+		} else {
+			sender.sendMessage("This land is not claimed by anyone.");
+		}
+		
+		return false;
+	}
+
+
+	private boolean unclaimAllLand(CommandSender sender) {
+		
+		//TODO: account for faction member rank
+		Player player ;
+		if ( !( sender instanceof Player )) {
+			player = null;
+		} else {
+			player = (Player) sender;
+		}
+		//if player is in a faction
+		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			
+			for (LandClaim lc : fac.getClaims()) {
+				fac.removeClaim(lc);
+			}
+			sender.sendMessage("You have unclaimed this all land claims.");
+			Faction.serialize(fac, fac.getAutoFileName());
+			return true;
+		}
+		
+		return false;
+	}
+
+
+	private boolean unclaimLand(CommandSender sender, Command command, String[] extraArguments) {
+		
+		//TODO: account for faction member rank
+		Player player ;
+		if ( !( sender instanceof Player )) {
+			player = null;
+		} else {
+			player = (Player) sender;
+		}
+		
+		//get players faction
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		if (fac == null) {
+			sender.sendMessage("You can't do this because you are not in a faction.");
+			return false;
+		}
+		
+		if ( extraArguments.length == 1 ) {
+			
+			//get chunk player is in
+			Chunk chunk = player.getLocation().getChunk();
+			LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
+			
+			if(lc == null) {
+				return false;
+			}
+			
+			// we don't risk unclaiming land from another faction
+			for (LandClaim landClaim : fac.getClaims()) {
+				//because fac.getClaims() is just claims for the faction
+				//that the current player is in as a member
+				if ( landClaim.equals(lc) ) {
+					fac.removeClaim(lc);
+					sender.sendMessage("You have unclaimed this land claim.");
+					Faction.serialize(fac, fac.getAutoFileName());
+					return true;
+				}
+			}
+			
+			if ( LandClaim.isSpecifiedLandClaimInsideAnyFaction(lc)) {
+				//TODO: account for diplomacy
+				sender.sendMessage("This territory is owned by a different faction.");
+				return false;
+			} else {
+				fac.addClaim(new LandClaim());
+			}
+			
+		}
+		
+		return false;
+	}
+
+
+	private boolean claimLand(CommandSender sender, Command command, 
+			String[] extraArguments) {
+		Player player ;
+		
+		//TODO: account for faction member rank
+		
+		if ( !( sender instanceof Player )) {
+			player = null;
+		} else {
+			player = (Player) sender;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		if (fac == null) {
+			sender.sendMessage("Land claim failed! You are not in a faction.");
+			return false;
+		}
+		
+		//if we are to claim one at a time
+		if ( extraArguments.length == 1 ) {
+			
+			//get chunk player is in
+			Chunk chunk = player.getLocation().getChunk();
+			if ( LandClaim.isSpecifiedChunkInsideAnyFaction(chunk)  ) {
+				//TODO: account for diplomacy
+				//TODO: account for contest claiming
+				sender.sendMessage("This territory is already claimed.");
+				return false;
+			} else {
+				fac.addClaim(new LandClaim(chunk));
+				sender.sendMessage("You have successfully claimed this chunk.");
+				Faction.serialize(fac, fac.getAutoFileName());
+			}
+			
+		}
+		
+		
+		return true;
+	}
+
+
 	public static UUID getUuidFromPlayerName(String name) {
 		Player userPlayer = Bukkit.getPlayer(name);
 		return userPlayer.getUniqueId();
