@@ -10,14 +10,18 @@
 //GNU General Public License for more details.
 package openFactions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.bukkit.Chunk;
+import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_15_R1.CraftChunk;
 
-public class LandClaim {
+public class LandClaim implements Serializable {
 
-	private Chunk claimedChunk;
+	//private transient Chunk claimedChunk;
 	private String claimDescriptor;
+	private CraftChunk craftChunk;
 	
 	/**
 	 * Empty constructor; does nothing
@@ -26,26 +30,29 @@ public class LandClaim {
 		
 	}
 	
+	
 	/**
 	 * Sets the landclaim with the chunk. Claim descriptor is an empty string
 	 * @param claimedChunk the minecraft chunk in question
 	 */
-	public LandClaim(Chunk claimedChunk) {
-		this.claimedChunk = claimedChunk;
+	public LandClaim(net.minecraft.server.v1_15_R1.Chunk claimedChunk) {
 		this.claimDescriptor = "";
+		
+		this.setCraftChunk(new CraftChunk(claimedChunk));
+		
+//		this.setChunkX(claimedChunk.getX());
+//		this.chunkZ = claimedChunk.getZ();
 	}
 	
-	public LandClaim(Chunk claimedChunk, String claimDescriptor) {
-		this.claimedChunk = claimedChunk;
+	public LandClaim(net.minecraft.server.v1_15_R1.Chunk claimedChunk, String claimDescriptor) {
+		this.setCraftChunk(convertChunkToCraftChunk(claimedChunk));
 		this.claimDescriptor = claimDescriptor;
+		
+		
 	}
 	
-	public void setClaimedChunk(Chunk claimedChunk) {
-		this.claimedChunk = claimedChunk;
-	}
-	
-	public Chunk getClaimedChunk() {
-		return this.claimedChunk;
+	public static CraftChunk convertChunkToCraftChunk(net.minecraft.server.v1_15_R1.Chunk chunk) {
+		return new CraftChunk(chunk);
 	}
 	
 	public void setClaimDescriptor(String claimDescriptor) {
@@ -80,11 +87,11 @@ public class LandClaim {
 	 * @param chunk the specified chunk
 	 * @return whether or not any faction has this chunk
 	 */
-	public static boolean isSpecifiedChunkInsideAnyFaction(Chunk chunk) {
+	public static boolean isSpecifiedCraftChunkInsideAnyFaction(CraftChunk chunk) {
 		
 		for (Faction fac : CustomNations.factions) {
 			for (LandClaim landClaim : fac.getClaims()) {
-				if (landClaim.getClaimedChunk().equals(chunk)) {
+				if (landClaim.getCraftChunk().equals(chunk)) {
 					return true;
 				}
 			}
@@ -99,14 +106,39 @@ public class LandClaim {
 	 * @param chunk minecraft chunk (which may be encapsulated in a LandClaim)
 	 * @return list of factions
 	 */
-	public static ArrayList<Faction> returnFactionObjectsWhereChunkIsFoundIn(Chunk chunk){
+//	public static ArrayList<Faction> returnFactionObjectsWhereChunkIsFoundIn(Chunk chunk){
+//		ArrayList<Faction> result = new ArrayList<Faction>();
+//		
+//		CraftChunk craftChunk = new CraftChunk(chunk);
+//		
+//		for (Faction fac : CustomNations.factions) {
+//			for (LandClaim landClaim : fac.getClaims()) {
+//				//is this chunk inside a landclaim that is inside a faction
+//				//in a list of factions?
+//				//if so, add this faction to the result list
+//				if (landClaim.getCraftChunk().equals(chunk)) {
+//					result.add(fac);
+//				}
+//			}
+//		}
+//		
+//		return result;
+//		
+//	}
+	
+	/**
+	 * returns faction objects where a specific chunk is inside of
+	 * @param chunk minecraft chunk (which may be encapsulated in a LandClaim)
+	 * @return list of factions
+	 */
+	public static ArrayList<Faction> returnFactionObjectsWhereCraftChunkIsFoundIn(net.minecraft.server.v1_15_R1.Chunk chunk){
 		ArrayList<Faction> result = new ArrayList<Faction>();
 		for (Faction fac : CustomNations.factions) {
 			for (LandClaim landClaim : fac.getClaims()) {
 				//is this chunk inside a landclaim that is inside a faction
 				//in a list of factions?
 				//if so, add this faction to the result list
-				if (landClaim.getClaimedChunk().equals(chunk)) {
+				if (landClaim.getCraftChunk().equals(chunk)) {
 					result.add(fac);
 				}
 			}
@@ -122,12 +154,12 @@ public class LandClaim {
 	 * @param chunk the queried chunk
 	 * @return landclaim object containing the chunk; or null.
 	 */
-	public static LandClaim returnLandClaimContainingSpecifiedChunk(Chunk chunk) {
+	public static LandClaim returnLandClaimContainingSpecifiedChunk(net.minecraft.server.v1_15_R1.Chunk chunk) {
 		for (Faction fac : CustomNations.factions) {
 			for (LandClaim landClaim : fac.getClaims()) {
 				// is this chunk exactly equal to the one 
 				//encapsulated in this particular landclaim object????
-				if (landClaim.getClaimedChunk().equals(chunk)) {
+				if (landClaim.getCraftChunk().equals(chunk)) {
 					//match found!
 					return landClaim;
 				}
@@ -158,6 +190,16 @@ public class LandClaim {
 		}
 		
 		return result;
+	}
+
+
+	public CraftChunk getCraftChunk() {
+		return craftChunk;
+	}
+
+
+	public void setCraftChunk(CraftChunk craftChunk) {
+		this.craftChunk = craftChunk;
 	}
 	
 }

@@ -19,6 +19,7 @@ import org.bukkit.Chunk;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.craftbukkit.v1_15_R1.CraftChunk;
 import org.bukkit.entity.Player;
 
 import openFactions.CustomNations;
@@ -162,6 +163,7 @@ public class Commands implements CommandExecutor{
 			case "show":
 				
 				for ( Faction faction1 : CustomNations.factions) {
+					//must be bugged
 					if (faction1.getName().equalsIgnoreCase(extraArguments[1])) {
 						sender.sendMessage(faction1.toString());
 						return true;
@@ -188,14 +190,15 @@ public class Commands implements CommandExecutor{
 		}
 		
 		Chunk chunk = player.getLocation().getChunk();
-		if ( LandClaim.isSpecifiedChunkInsideAnyFaction(chunk) ) {
+		
+		if ( LandClaim.isSpecifiedCraftChunkInsideAnyFaction(new CraftChunk((net.minecraft.server.v1_15_R1.Chunk) chunk))) {
 			
-			ArrayList<Faction> facs = LandClaim.returnFactionObjectsWhereChunkIsFoundIn(chunk);
+			ArrayList<Faction> facs = LandClaim.returnFactionObjectsWhereCraftChunkIsFoundIn( (net.minecraft.server.v1_15_R1.Chunk) chunk);
 			
 			sender.sendMessage("--- Land claim ownership ---");
 			for(Faction fac : facs) {
 				
-				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
+				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk((net.minecraft.server.v1_15_R1.Chunk) chunk);
 				
 				sender.sendMessage("Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
 			}
@@ -256,7 +259,7 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
+			LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk((net.minecraft.server.v1_15_R1.Chunk) chunk);
 			
 			if(lc == null) {
 				return false;
@@ -274,12 +277,12 @@ public class Commands implements CommandExecutor{
 				}
 			}
 			
-			if ( LandClaim.isSpecifiedChunkInsideAnyFaction(chunk)) {
+			if ( LandClaim.isSpecifiedLandClaimInsideAnyFaction(lc)) {
 				//TODO: account for diplomacy
 				sender.sendMessage("This territory is owned by a different faction.");
 				return false;
 			} else {
-				fac.addClaim(new LandClaim(chunk));
+				fac.addClaim(new LandClaim());
 			}
 			
 		}
@@ -311,12 +314,12 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			if ( LandClaim.isSpecifiedChunkInsideAnyFaction(chunk)) {
+			if ( LandClaim.isSpecifiedCraftChunkInsideAnyFaction(new CraftChunk((net.minecraft.server.v1_15_R1.Chunk) chunk))) {
 				//TODO: account for diplomacy
 				sender.sendMessage("This territory is owned by a neutral faction.");
 				return false;
 			} else {
-				fac.addClaim(new LandClaim(chunk));
+				fac.addClaim(new LandClaim((net.minecraft.server.v1_15_R1.Chunk) chunk));
 				sender.sendMessage("You have successfully claimed this chunk.");
 				Faction.serialize(fac, fac.getAutoFileName());
 			}

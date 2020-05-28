@@ -30,6 +30,9 @@ import java.io.File;
  */
 public class Faction implements Serializable {
 
+	/**
+	 * 
+	 */
 	private String name;
 	private String dateCreated;
 //	private ArrayList<String> members = new ArrayList<String>();
