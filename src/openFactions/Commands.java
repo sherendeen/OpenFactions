@@ -191,14 +191,14 @@ public class Commands implements CommandExecutor{
 		
 		Chunk chunk = player.getLocation().getChunk();
 		
-		if ( LandClaim.isSpecifiedCraftChunkInsideAnyFaction(new CraftChunk((net.minecraft.server.v1_15_R1.Chunk) chunk))) {
+		if ( LandClaim.isSpecifiedChunkInsideAnyFaction( chunk)) {
 			
-			ArrayList<Faction> facs = LandClaim.returnFactionObjectsWhereCraftChunkIsFoundIn( (net.minecraft.server.v1_15_R1.Chunk) chunk);
+			ArrayList<Faction> facs = LandClaim.returnFactionObjectsWhereChunkIsFoundIn(chunk);
 			
 			sender.sendMessage("--- Land claim ownership ---");
 			for(Faction fac : facs) {
 				
-				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk((net.minecraft.server.v1_15_R1.Chunk) chunk);
+				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
 				
 				sender.sendMessage("Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
 			}
@@ -259,7 +259,7 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk((net.minecraft.server.v1_15_R1.Chunk) chunk);
+			LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
 			
 			if(lc == null) {
 				return false;
@@ -314,12 +314,13 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			if ( LandClaim.isSpecifiedCraftChunkInsideAnyFaction(new CraftChunk((net.minecraft.server.v1_15_R1.Chunk) chunk))) {
+			if ( LandClaim.isSpecifiedChunkInsideAnyFaction(chunk)  ) {
 				//TODO: account for diplomacy
-				sender.sendMessage("This territory is owned by a neutral faction.");
+				//TODO: account for contest claiming
+				sender.sendMessage("This territory is already claimed.");
 				return false;
 			} else {
-				fac.addClaim(new LandClaim((net.minecraft.server.v1_15_R1.Chunk) chunk));
+				fac.addClaim(new LandClaim(chunk));
 				sender.sendMessage("You have successfully claimed this chunk.");
 				Faction.serialize(fac, fac.getAutoFileName());
 			}
