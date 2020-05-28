@@ -57,12 +57,27 @@ public class CustomNations extends JavaPlugin{
 			CustomNations.factions.add(Faction.deserialize(paths.get(i)));
 		}
 			
+	}
+	
+	/**
+	 * When the server shuts down, or whenever the plugin is disabled,
+	 * serialize the entire array list of faction objects.
+	 */
+	@Override
+	public void onDisable() {
 		
-		
-		
+		System.out.println("Saving all faction files...");
+		for(int i = 0; i < factions.size(); i++) {
+			//serialize each of the faction objects in the list
+			Faction.serialize(factions.get(i), factions.get(i).getAutoFileName());
+		}
 	}
 
 
+	/**
+	 * Deletes the faction save file (*.fbin)
+	 * @param autoFileName the preformated file name (recommended)
+	 */
 	public static void deleteFactionSave(String autoFileName) {
 		File file = new File(autoFileName);
 		if(file.exists()) {

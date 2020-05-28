@@ -152,19 +152,6 @@ public class Faction implements Serializable {
 	public void removeMember(UUID uuid) {
 		this.members.remove(uuid);
 	}
-
-	public static Faction makeTestFaction() {
-
-//		Faction fac = new Faction("Testificate", "inivican");
-//		fac.members.add("ZettaX");
-//		fac.members.add("Gagger");
-		
-		Faction fac = new Faction("Testificate", UUID.fromString("622440c0-2638-4c18-9b41-e99adc00683d"));
-		fac.members.add(UUID.fromString("5b6692b5-0b67-49d6-bfcc-3bf4a04a2c72"));
-	//	fac.members.add(UUID.fromString("cff474e0-cdad-4076-bafa-d1daa0d0d8d5"));
-		
-		return fac;
-	}
 	
 	public String getAutoFileName() {
 		return "faction_" + getSerialUUID() + "_.fbin";
