@@ -87,7 +87,7 @@ public class Commands implements CommandExecutor{
 				if (Faction.isPlayerInAnyFaction(sender.getName())) {
 					sender.sendMessage("You cannot join a faction as you are already in one!");
 				} else {
-					for ( Faction fac : CustomNations.factions) {
+					for (Faction fac : CustomNations.factions) {
 						if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
 							fac.addMember(player.getUniqueId());
 							sender.sendMessage("You have joined " + fac.getName()+".");
@@ -170,7 +170,33 @@ public class Commands implements CommandExecutor{
 					}
 				}
 				return false;
+			case "setrelation":
+				//TODO: create method(s) from this
+				if(Faction.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
+					sender.sendMessage("You are not in a faction!");
+					return false; 
+				}
+				Faction faction1 = Faction.returnFactionThatPlayerIsIn(player.getUniqueId()); 
+				if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Faction.getFactionByFactionName(faction1.getName()) == null) {
+					sender.sendMessage("That faction name is invalid!");
+					return true;
+				}
+				String faction1Name = faction1.getName(); 
+				faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], relationshipTypes.valueOf(extraArguments[2]));
+				Bukkit.broadcastMessage(faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
 				
+				return true; 
+			case "showrelations":
+				//TODO: create relevant method for show relations
+          //TODO: don't require all caps for input. Suggestion: use toLower
+				if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
+					sender.sendMessage(extraArguments[1] + " is not a real faction!");
+					return false;
+				}
+				Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
+				sender.sendMessage(Faction.getRelationshipString(fac2));
+				return true;
+          
 			default:
 				return true;
 			}
