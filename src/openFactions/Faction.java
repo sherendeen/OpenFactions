@@ -221,7 +221,8 @@ public class Faction implements Serializable {
 	}
 	
 	/**
-	 * Returns the faction object that contains a specified member by UUID
+	 * Returns the faction object that contains a specified member by UUID\
+	 * Needs a nullcheck
 	 * @param playerUUID
 	 * @return faction object containing member uuid
 	 */
