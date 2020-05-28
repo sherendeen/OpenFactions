@@ -328,6 +328,13 @@ public class Faction implements Serializable {
 		}
 		return false;
 	}
+	
+	/**
+	 * Retrieves a faction object representing a given faction
+	 * after a valid name is specified. Requires a null check
+	 * @param name
+	 * @return faction object or NULL
+	 */
 	public static Faction getFactionByFactionName(String name) {
 		for ( Faction faction1 : CustomNations.factions) {
 			if (faction1.getName().equalsIgnoreCase(name)) {
@@ -338,6 +345,23 @@ public class Faction implements Serializable {
 		return null;
 		
 	}
+	
+	/**
+	 * Returns true if a faction exists, returns false if it does not
+	 * @param name faction name
+	 * @return boolean value as to whether the faction already exists
+	 */
+	public static boolean doesFactionExist(String name) {
+		
+		for (Faction fac : CustomNations.factions) {
+			if (fac.getName().equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	
 	
 

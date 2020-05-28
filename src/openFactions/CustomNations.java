@@ -47,6 +47,7 @@ public class CustomNations extends JavaPlugin{
 		//TODO: improve this getWorld() so that it isn't hardcoded like this
 		//perhaps make it so that it uses whatever it is configured to use
 		this.w = getServer().getWorld("world");
+		
 		try {
 			Files.list(new File(System.getProperty("user.dir")).toPath()).forEach(path ->{
 				

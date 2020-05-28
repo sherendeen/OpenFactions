@@ -31,7 +31,9 @@ enum Cmd {
 	LIST,
 	LEAVE,
 	OWNS,
+	SETRELATION,
 	SHOW,
+	SHOWRELATIONS,
 	UNCLAIM,
 	UNCLAIMALL,
 	WHOIS
@@ -65,40 +67,12 @@ public class Commands implements CommandExecutor{
 				return claimLand(sender,command,extraArguments);
 				
 			case "create":
-				//player.sendMessage(ChatColor.RED + "Attempting to create faction " + extraArguments[1]);
-				System.out.println("Attempting to create faction");
 				
-				//get player's unique id
-				Faction faction = new Faction(extraArguments[1], player.getUniqueId());
-				
-				CustomNations.factions.add(faction);
-				Faction.serialize(faction, faction.getAutoFileName());
-				
-				//"faction_" + 
-				//CustomNations.factions.lastIndexOf(faction) + 
-				//"_" + faction.getSerialUUID()+".fbin"
-				
-				return true;
+				return createFaction(sender, extraArguments);
 				
 			case "join":
 				
-				//we'll assume that we don't need
-				//an invitation
-				if (Faction.isPlayerInAnyFaction(sender.getName())) {
-					sender.sendMessage("You cannot join a faction as you are already in one!");
-				} else {
-					for (Faction fac : CustomNations.factions) {
-						if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
-							fac.addMember(player.getUniqueId());
-							sender.sendMessage("You have joined " + fac.getName()+".");
-							return true;
-						}
-						
-					}
-					
-				}
-				
-				return false;
+				return joinFaction(sender, extraArguments);
 				
 			case "list":
 				//TODO: list faction names and number of members
@@ -111,26 +85,7 @@ public class Commands implements CommandExecutor{
 				return true;
 				
 			case "leave":
-				Player pl = (Player) sender;
-				UUID plUuid = pl.getUniqueId();
-				Faction fac = Faction.returnFactionThatPlayerIsIn(plUuid);
-				
-				if (fac != null) {
-					fac.removeMember(plUuid);
-					pl.sendMessage("You have left " + fac.getName() + ".");
-					//if you are the last member of the faction
-					//delete the faction
-					if ( fac.getMembers().size() < 1 ) {
-						pl.sendMessage("You have disbanded "+fac.getName()+".");
-						CustomNations.factions.remove(fac);
-						CustomNations.deleteFactionSave(fac.getAutoFileName());
-						return true;
-					}
-					
-				} else {
-					sender.sendMessage("You are not in a real faction!");
-					return false;
-				}
+				return leaveFaction(sender);
 			case "owns":
 				
 				return returnWhoOwns(sender);
@@ -145,57 +100,18 @@ public class Commands implements CommandExecutor{
 				
 			case "whois":
 				
-				UUID uuid = getUuidFromPlayerName(extraArguments[1]);
-				if (uuid != null) {
-					
-					Faction fac1 = Faction.returnFactionThatPlayerIsIn(uuid);
-					
-					if (fac1 != null) {
-						sender.sendMessage( fac1.toString() ); 
-						return true;
-					} else {
-						sender.sendMessage(extraArguments[1] 
-								+ " is either not in a faction or is not a real player.");
-						return false;
-					}
-				}
+				return showWhoIsReport(sender,extraArguments);
 
 			case "show":
 				
-				for ( Faction faction1 : CustomNations.factions) {
-					//must be bugged
-					if (faction1.getName().equalsIgnoreCase(extraArguments[1])) {
-						sender.sendMessage(faction1.toString());
-						return true;
-					}
-				}
-				return false;
+				return showFactionInformation(sender, extraArguments);
 			case "setrelation":
-				//TODO: create method(s) from this
-				if(Faction.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
-					sender.sendMessage("You are not in a faction!");
-					return false; 
-				}
-				Faction faction1 = Faction.returnFactionThatPlayerIsIn(player.getUniqueId()); 
-				if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Faction.getFactionByFactionName(faction1.getName()) == null) {
-					sender.sendMessage("That faction name is invalid!");
-					return true;
-				}
-				String faction1Name = faction1.getName(); 
-				faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], relationshipTypes.valueOf(extraArguments[2]));
-				Bukkit.broadcastMessage(faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
 				
-				return true; 
+				return setRelation(sender,extraArguments); 
+				
 			case "showrelations":
-				//TODO: create relevant method for show relations
-          //TODO: don't require all caps for input. Suggestion: use toLower
-				if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
-					sender.sendMessage(extraArguments[1] + " is not a real faction!");
-					return false;
-				}
-				Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
-				sender.sendMessage(Faction.getRelationshipString(fac2));
-				return true;
+				
+				return showRelations(sender, extraArguments);
           
 			default:
 				return true;
@@ -206,6 +122,170 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean showWhoIsReport(CommandSender sender, String[] extraArguments) {
+		UUID uuid = getUuidFromPlayerName(extraArguments[1]);
+		
+		if (uuid != null) {
+			
+			if(Faction.doesFactionExist(extraArguments[1])) {
+				Faction fac1 = Faction.returnFactionThatPlayerIsIn(uuid);
+				//TODO: improve output
+				sender.sendMessage(fac1.toString());
+				return true;
+			} else {
+				sender.sendMessage(extraArguments[1] + " is not in a faction.");
+				return true;
+			}
+			
+			
+		} else {
+			sender.sendMessage(extraArguments[1] + " does not exist.");
+		}
+		return false;
+	}
+
+
+	private boolean showFactionInformation(CommandSender sender, String[] extraArguments) {
+		if (!Faction.doesFactionExist(extraArguments[1])) {
+			return false;
+		}
+		
+		for ( Faction faction1 : CustomNations.factions) {
+			//must be bugged
+			if (faction1.getName().equalsIgnoreCase(extraArguments[1])) {
+				sender.sendMessage(faction1.toString());
+			}
+		}
+		
+		return true;
+	}
+
+
+	private boolean showRelations(CommandSender sender, String[] extraArguments) {
+		//TODO: don't require all caps for input. Suggestion: use toLower
+		
+		if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
+			sender.sendMessage(extraArguments[1] + " is not a real faction!");
+			return false;
+		}
+		
+		Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
+		sender.sendMessage(Faction.getRelationshipString(fac2));
+		
+		return true;
+	}
+
+
+	private boolean setRelation(CommandSender sender, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if (player == null) {
+			sender.sendMessage("The console may not join a faction.");
+			return false;
+		}
+		
+		if(Faction.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
+			sender.sendMessage("You are not in a faction!");
+			return false; 
+		}
+		
+		Faction faction1 = Faction.returnFactionThatPlayerIsIn(player.getUniqueId()); 
+		if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Faction.getFactionByFactionName(faction1.getName()) == null) {
+			sender.sendMessage("That faction name is invalid!");
+			return false;
+		}
+		
+		String faction1Name = faction1.getName(); 
+		faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], relationshipTypes.valueOf(extraArguments[2]));
+		Bukkit.broadcastMessage(faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
+		
+		return true;
+	}
+
+
+	private boolean joinFaction(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		if (player == null) {
+			sender.sendMessage("The console may not join a faction.");
+			return false;
+		}
+		
+		//we'll assume that we don't need
+		//an invitation
+		if (Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+			sender.sendMessage("You cannot join a faction as you are already in one!");
+			return false;
+		} else {
+			for (Faction fac : CustomNations.factions) {
+				if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
+					fac.addMember(player.getUniqueId());
+					sender.sendMessage("You have joined " + fac.getName()+".");
+				}
+				
+			}
+			
+		}
+		return true;
+	}
+
+
+	private boolean createFaction(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		//null check (check if CommandSender is the console)
+		if (player == null ) {
+			sender.sendMessage("Faction creation as the console is not allowed.");
+			return false;
+		} else if(Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+			sender.sendMessage("You are already in a faction."
+					+ " You must first leave your faction "
+					+ "in order to make a new one.");
+			return false;
+		} else if (extraArguments.length > 2) {
+			sender.sendMessage("You may not have spaces in your faction name.");
+			return false;
+		} else if (Faction.doesFactionExist(extraArguments[1])) {
+			sender.sendMessage("You may not create a faction with name " 
+					+ extraArguments[1] + " because it already exists.");
+			return false;
+		}
+		
+		//get player's unique id
+		Faction faction = new Faction(extraArguments[1], player.getUniqueId());
+		
+		CustomNations.factions.add(faction);
+		Faction.serialize(faction, faction.getAutoFileName());
+		
+		return true;
+	}
+
+
+	private boolean leaveFaction(CommandSender sender) {
+		Player pl = (Player) sender;
+		UUID plUuid = pl.getUniqueId();
+		Faction fac = Faction.returnFactionThatPlayerIsIn(plUuid);
+		
+		if (fac != null) {
+			fac.removeMember(plUuid);
+			pl.sendMessage("You have left " + fac.getName() + ".");
+			//if you are the last member of the faction
+			//delete the faction
+			if ( fac.getMembers().size() < 1 ) {
+				pl.sendMessage("You have disbanded "+fac.getName()+".");
+				CustomNations.factions.remove(fac);
+				CustomNations.deleteFactionSave(fac.getAutoFileName());
+				return true;
+			}
+			
+		} else {
+			sender.sendMessage("You are not in a real faction!");
+		}
+		return false;
+	}
+
+
 	private boolean returnWhoOwns(CommandSender sender) {
 		
 		Player player ;
