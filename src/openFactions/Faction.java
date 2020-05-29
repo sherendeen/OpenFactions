@@ -47,7 +47,7 @@ public class Faction implements Serializable {
 	private String name;
 	private String dateCreated;
 //	private ArrayList<String> members = new ArrayList<String>();
-
+	private ArrayList<Visa> visas = new ArrayList<Visa>();
 	private ArrayList<UUID> members = new ArrayList<UUID>();
 	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
 	private ArrayList<LandClaim> claimList = new ArrayList<LandClaim>();
