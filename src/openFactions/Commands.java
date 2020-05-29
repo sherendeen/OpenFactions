@@ -16,6 +16,10 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;  
+import java.util.Date;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -39,6 +43,7 @@ enum Cmd {
 	WHOIS
 }
 
+
 public class Commands implements CommandExecutor{
 	
 	CustomNations plugin;
@@ -46,6 +51,7 @@ public class Commands implements CommandExecutor{
 		this.plugin = plugin;
 	}
 	
+	SimpleDateFormat dataFormat = new SimpleDateFormat("dd/MM/yyyy");
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
@@ -112,6 +118,15 @@ public class Commands implements CommandExecutor{
 			case "showrelations":
 				
 				return showRelations(sender, extraArguments);
+			case "grantvisa":
+				
+				return grantVisa(sender, extraArguments);
+			case "revokevisa":
+				
+				return revokeVisa(sender, extraArguments);
+			case "checkvisa":
+				
+				return checkVisa(sender, extraArguments);
           
 			default:
 				return true;
@@ -120,6 +135,178 @@ public class Commands implements CommandExecutor{
 		} else {
 			return false;
 		}
+	}
+	
+	private boolean grantVisa(CommandSender sender, String[] extraArguments) {
+		
+		UUID visaHolder = null;
+		Player player = (Player) sender;
+		Date currentDate = new Date();
+		Date expirationDate = null;
+		String expirationDateString = null;
+		String visaClass = "0";
+		int visaClassInteger = 0;
+		
+		//Sender has to specify a player, more specifically, a real one
+		
+		if(extraArguments.length < 2) {
+			sender.sendMessage("You must specify a player!");
+			return true;
+		}
+		
+		//If the player is not real, exit.
+		
+		try {
+			visaHolder = getUuidFromPlayerName(extraArguments[1]);
+		} catch(NullPointerException e) {
+			sender.sendMessage("You must specify a real player!");
+			return true;
+		}
+		
+		
+		//Exception handling...		
+		try {
+			visaClass = extraArguments[3]; 
+			visaClassInteger = Integer.valueOf(visaClass);
+			expirationDateString = extraArguments[2];
+			expirationDate = dataFormat.parse(expirationDateString);
+		} catch (NumberFormatException e) {
+			sender.sendMessage("Visa class must be a number from 0 to 4");
+			return true;
+		} catch (ParseException e) {
+			sender.sendMessage("Invalid date format! The correct format is: dd/mm/yyyy");
+			return true;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			//This is okay, the player doesn't have to specify a visa class, as it defaults to zero.
+			//The player also does not have to specify an expiration date, as it will default to none
+		} catch (NullPointerException e) {
+			//This is okay, the player doesn't have to specify a visa class, as it defaults to zero.
+			//The player also does not have to specify an expiration date, as it will default to none
+		}
+
+		if(visaHolder != null) {
+			
+			if(Faction.isPlayerInAnyFaction(player.getName()) == false) {
+				sender.sendMessage("You are not in a faction!");
+				return true;
+			}
+			
+			Faction senderFaction = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
+			
+			//Check to see if the player already has a visa.
+			for(int i = 0; i < senderFactionVisaList.size(); i++) {
+				Visa v = senderFactionVisaList.get(i);
+				if(v.getVisaHolder().equals(visaHolder)) {
+					sender.sendMessage("That player already has a visa.");
+					return true;
+				}
+			}
+			
+			Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
+			senderFaction.addVisa(visa);
+			//In the event the expiration date is null, the second argument will be the visa class, but only if it is not null.
+			if(expirationDate == null) {
+				if(extraArguments[2] != null) {
+					visaClass = extraArguments[2];
+				}
+				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
+				return true;			
+			}
+			//If there is an expiration date, then the third argument will be the visa class, or zero if there is no third argument.
+			sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
+			return true;
+			
+		
+		}
+		return false;
+	}
+		
+	private boolean revokeVisa(CommandSender sender, String[] extraArguments) {
+		
+		UUID visaHolder = null;
+		Player player = (Player) sender;
+		
+		//Sender has to specify a player, more specifically, a real one
+		
+		if(extraArguments.length < 2) {
+			sender.sendMessage("You must specify a player!");
+			return true;
+		}
+		
+		//If the player is not real, exit.
+		
+		try {
+			visaHolder = getUuidFromPlayerName(extraArguments[1]);
+		} catch(NullPointerException e) {
+			sender.sendMessage("You must specify a real player!");
+			return true;
+		}
+		
+		if(Faction.isPlayerInAnyFaction(player.getName()) == false) {
+			sender.sendMessage("You are not in a faction!");
+			return true;
+		}
+		
+		Faction senderFaction = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
+				
+		if(visaHolder != null) {
+			
+			for(int i = 0; i < senderFactionVisaList.size(); i++) {
+				Visa v = senderFactionVisaList.get(i);
+				if(v.getVisaHolder().equals(visaHolder)) {
+					senderFactionVisaList.remove(i);
+					sender.sendMessage("Revoked " + extraArguments[1] + "'s visa");
+					return true;
+				}
+			}
+			sender.sendMessage("That player does not have a visa!");
+			return true;
+			
+		}
+
+		return false;
+		
+	}
+	//Utility command to check if a player has a visa 
+	private boolean checkVisa(CommandSender sender, String[] extraArguments) {
+		UUID visaHolder = null;
+		Player player = (Player) sender;
+		
+		//Sender has to specify a player, more specifically, a real one
+		
+		if(extraArguments.length < 2) {
+			sender.sendMessage("You must specify a player!");
+			return true;
+		}
+		
+		//If the player is not real, exit.
+		
+		try {
+			visaHolder = getUuidFromPlayerName(extraArguments[1]);
+		} catch(NullPointerException e) {
+			sender.sendMessage("You must specify a real player!");
+			return true;
+		}
+		Faction senderFaction = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
+				
+		if(visaHolder != null) {
+			
+			for(int i = 0; i < senderFactionVisaList.size(); i++) {
+				Visa v = senderFactionVisaList.get(i);
+				if(v.getVisaHolder().equals(visaHolder)) {
+					sender.sendMessage(extraArguments[1] + " has a visa");
+					return true;
+				}
+			}
+			sender.sendMessage("That player does not have a visa!");
+			return true;
+			
+		}
+		
+		return false;
 	}
 	
 	private boolean showWhoIsReport(CommandSender sender, String[] extraArguments) {
