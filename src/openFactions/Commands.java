@@ -27,12 +27,16 @@ import openFactions.CustomNations;
 enum Cmd {
 	CLAIM,
 	CREATE,
+	CREATEGROUP,
+	CG,/**alias for CreateGroup*/
 	JOIN,
 	LIST,
 	LEAVE,
 	OWNS,
+	SETGROUP,
 	SETRELATION,
 	SHOW,
+	SHOWGROUP,
 	SHOWRELATIONS,
 	UNCLAIM,
 	UNCLAIMALL,
@@ -70,19 +74,18 @@ public class Commands implements CommandExecutor{
 				
 				return createFaction(sender, extraArguments);
 				
+			case "creategroup":
+			case "cg":
+				
+				return createGroup(sender, extraArguments);
+				
 			case "join":
 				
 				return joinFaction(sender, extraArguments);
 				
 			case "list":
-				//TODO: list faction names and number of members
-				//instead of showing entire toString() for each faction
-				sender.sendMessage("List of factions - Output");
 				
-				for ( int i = 0 ; i < CustomNations.factions.size(); i++ ) {
-					sender.sendMessage(CustomNations.factions.get(i).toString());
-				}
-				return true;
+				return listFactions(sender);
 				
 			case "leave":
 				return leaveFaction(sender);
@@ -103,8 +106,11 @@ public class Commands implements CommandExecutor{
 				return showWhoIsReport(sender,extraArguments);
 
 			case "show":
-				
 				return showFactionInformation(sender, extraArguments);
+			case "showgroup":
+				
+				return 
+				
 			case "setrelation":
 				
 				return setRelation(sender,extraArguments); 
@@ -122,6 +128,63 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean createGroup(CommandSender sender, String[] extraArguments) {
+		// cast
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage("You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length == 2) {
+			sender.sendMessage("Insufficient number of arguments.");
+			return false;
+		}
+		
+		
+		
+		//determine if player is in a faction
+		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+			
+			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			
+			if (Faction.doesGroupExist( extraArguments[3], fac)) {
+				sender.sendMessage("This group of " + extraArguments[3] + " already exists!" );
+				return false;
+			}
+			
+			Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+			
+			if (Group.doesGroupHavePermission(Can.MAKE_OR_REMOVE_GROUPS, group)) {
+				//inherit from the group you are in but have a different name
+				Group newGroup = group;
+				newGroup.setName(extraArguments[3]);
+				// we don't want to inherit the members of the group
+				newGroup = Group.removeAllMembersFromGroup(newGroup);
+				fac.addGroup(newGroup);
+				
+				sender.sendMessage("New group ["+extraArguments[3]+"] created.");
+				Faction.serialize(fac, fac.getAutoFileName());
+			}
+			
+		}
+		
+		
+		return true;
+	}
+
+
+	private boolean listFactions(CommandSender sender) {
+		sender.sendMessage("List of factions - Output");
+		
+		for ( int i = 0 ; i < CustomNations.factions.size(); i++ ) {
+			sender.sendMessage(CustomNations.factions.get(i).toString());
+		}
+		return true;
+	}
+
+
 	private boolean showWhoIsReport(CommandSender sender, String[] extraArguments) {
 		UUID uuid = getUuidFromPlayerName(extraArguments[1]);
 		

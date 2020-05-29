@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
+
 import java.io.File;
 
 /**
@@ -101,9 +102,27 @@ public class Faction implements Serializable {
 		this.groups.add(adminGroup);
 		this.groups.add(commons);
 		this.defaultGroup = commons;
+		
 		this.serialUUID = UUID.randomUUID();
 	}
 
+	public void setGroups(ArrayList<Group> groups) {
+		this.groups = groups;
+	}
+	
+	public void addGroup(Group group) {
+		this.groups.add(group);
+	}
+	
+	public void removeGroup(Group group) {
+		this.groups.remove(group);
+	}
+	
+	public ArrayList<Group> getGroups() {
+		return this.groups;
+	}
+	
+	
 	/**
 	 * Returns the readonly UUID. Must stay unique.
 	 * 
@@ -153,8 +172,18 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Nation [name=" + name + ", dateCreated=" + dateCreated + ", members=" + returnListOfNames(getMembers()) + ", claimList="
-				+ claimList + ", serialUUID=" + serialUUID + "]";
+		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + returnListOfNames(getMembers()) + ", claimList: {"
+				+ getListOfCoordinates(claimList) + "}, groups: " + getListOfGroupNames(this.groups) + ", default group upon joining: "+this.defaultGroup.getName();
+	}
+
+	private String getListOfGroupNames(ArrayList<Group> groups2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private String getListOfCoordinates(ArrayList<LandClaim> claimList2) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/**
@@ -387,6 +416,41 @@ public class Faction implements Serializable {
 
 	public void setDefaultGroup(Group defaultGroup) {
 		this.defaultGroup = defaultGroup;
+	}
+
+	/**
+	 * gets the group that the player belongs to inside a given faction
+	 * @param fac the faction that the player is in
+	 * @param uniqueId 
+	 * @return
+	 */
+	public static Group getGroupPlayerIsIn(Faction fac, UUID uniqueId) {
+		Group result = null;
+		for (Group group : fac.getGroups()) {
+			for(UUID uuid : group.getMembers()) {
+				if (uuid.equals(uniqueId)) {
+					result = group;
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Does this group exist in the faction?
+	 * @param name name of the group
+	 * @param fac faction in mind
+	 * @return whether or not the group in-fact exists
+	 */
+	public static boolean doesGroupExist(String name, Faction fac) {
+		
+		for ( Group g : fac.getGroups()) {
+			if (g.getName().equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	
