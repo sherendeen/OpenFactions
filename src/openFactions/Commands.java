@@ -202,18 +202,19 @@ public class Commands implements CommandExecutor{
 					return true;
 				}
 			}
-			
-			Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
-			senderFaction.addVisa(visa);
 			//In the event the expiration date is null, the second argument will be the visa class, but only if it is not null.
 			if(expirationDate == null) {
 				if(extraArguments[2] != null) {
 					visaClass = extraArguments[2];
 				}
+				Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
+				senderFaction.addVisa(visa);
 				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
 				return true;			
 			}
 			//If there is an expiration date, then the third argument will be the visa class, or zero if there is no third argument.
+			Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
+			senderFaction.addVisa(visa);
 			sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
 			return true;
 			
@@ -297,7 +298,7 @@ public class Commands implements CommandExecutor{
 			for(int i = 0; i < senderFactionVisaList.size(); i++) {
 				Visa v = senderFactionVisaList.get(i);
 				if(v.getVisaHolder().equals(visaHolder)) {
-					sender.sendMessage(extraArguments[1] + " has a visa");
+					sender.sendMessage(extraArguments[1] + " has a Class " + v.getVisaClass() +" visa");
 					return true;
 				}
 			}
