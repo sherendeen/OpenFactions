@@ -19,6 +19,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
@@ -173,17 +174,37 @@ public class Faction implements Serializable {
 	@Override
 	public String toString() {
 		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + returnListOfNames(getMembers()) + ", claimList: {"
-				+ getListOfCoordinates(claimList) + "}, groups: " + getListOfGroupNames(this.groups) + ", default group upon joining: "+this.defaultGroup.getName();
+				+ getArrayListOfCoordinates(this.claimList) + "}, groups: " + getListOfGroupNames(groups) + ", default group upon joining: "+this.defaultGroup.getName();
 	}
 
-	private String getListOfGroupNames(ArrayList<Group> groups2) {
-		// TODO Auto-generated method stub
-		return null;
+	private ArrayList<String> getListOfGroupNames(ArrayList<Group> groups) {
+		ArrayList<String> results = new ArrayList<String>();
+		
+		for ( Group group : groups) {
+			results.add(group.getName());
+		}
+		
+		return results;
 	}
 
-	private String getListOfCoordinates(ArrayList<LandClaim> claimList2) {
-		// TODO Auto-generated method stub
-		return null;
+	public static String[] getArrayOfCoordinates(ArrayList<LandClaim> claims) {
+		
+		String[] array = new String[claims.size()];
+		
+		for ( int i = 0 ; i < array.length; i++) {
+			array[i] =  (i==0) ? "[" : ",["+ claims.get(i).getChunkX() + ", " + claims.get(i).getChunkZ()+"]";
+		}
+		
+		return array;
+	}
+	
+	public static ArrayList<String> getArrayListOfCoordinates(ArrayList<LandClaim> claims) {
+		ArrayList<String> coords = new ArrayList<String>();
+		for ( LandClaim lc : claims) {
+			String result = (lc.getClaimDescriptor().isEmpty()) ? "] " : "] - ``"+ lc.getClaimDescriptor() +"`` ";
+			coords.add(" ["+lc.getChunkX() + ", " +lc.getChunkZ() + result);
+		}
+		return coords;
 	}
 
 	/**
@@ -451,6 +472,23 @@ public class Faction implements Serializable {
 		}
 		
 		return false;
+	}
+	
+	/**
+	 * Retrieves the matching group
+	 * Requires nullcheck
+	 * @param name name of the group
+	 * @param fac faction that the group is in
+	 * @return the group object (or null)
+	 */
+	public static Group getGroupFromFactionByName(String name, Faction fac) {
+		
+		for ( Group g : fac.getGroups()) {
+			if (g.getName().equalsIgnoreCase(name)) {
+				return g;
+			}
+		}
+		return null;
 	}
 	
 	

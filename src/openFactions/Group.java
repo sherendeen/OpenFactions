@@ -1,6 +1,7 @@
 package openFactions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.UUID;
 import java.io.Serializable;
 import java.time.Period;
@@ -41,6 +42,13 @@ public class Group implements Serializable {
 		this.setTermsEnd(termsEnd);
 		this.maxMembers = maxMembers;
 		this.setGroupPermissions(groupPermissions);
+	}
+	
+	@Override
+	public String toString() {
+		return "Group [name=" + name + ", members=" + members + ", joinable=" + joinable + ", term=" + term
+				+ ", termsEnd=" + termsEnd + ", maxMembers=" + maxMembers + ", groupPermissions="
+				+ Arrays.toString(groupPermissions) + "]";
 	}
 	
 	public String getName() {

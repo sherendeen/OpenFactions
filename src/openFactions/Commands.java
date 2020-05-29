@@ -34,6 +34,8 @@ enum Cmd {
 	LEAVE,
 	OWNS,
 	SETGROUP,
+	SETPERMISSION,
+	SP,/** alias for SetPermission */
 	SETRELATION,
 	SHOW,
 	SHOWGROUP,
@@ -105,11 +107,16 @@ public class Commands implements CommandExecutor{
 				
 				return showWhoIsReport(sender,extraArguments);
 
+			case "setpermission":
+			case "sp":
+				
+				return addPermissionHandler(sender, command, extraArguments);
+				
 			case "show":
 				return showFactionInformation(sender, extraArguments);
 			case "showgroup":
 				
-				return 
+				return showGroup(sender, extraArguments);
 				
 			case "setrelation":
 				
@@ -118,8 +125,12 @@ public class Commands implements CommandExecutor{
 			case "showrelations":
 				
 				return showRelations(sender, extraArguments);
-          
+			case "help":
 			default:
+				sender.sendMessage("--- OpenFactions Commands ---");
+				for (int i = 0; i <  Cmd.values().length; i++) {
+					sender.sendMessage(Cmd.values()[i].toString());
+				}
 				return true;
 			}
 			
@@ -128,6 +139,80 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean addPermissionHandler(CommandSender sender, Command command, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage("You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length < 3) {
+			sender.sendMessage("Insufficient number of arguments.");
+			return false;
+		}
+		
+		if (!Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+			sender.sendMessage("You are not in a faction.");
+			return false;
+		} 
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( !group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		
+		return true;
+	}
+
+
+	private boolean showGroup(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage("You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length == 2) {
+			sender.sendMessage("Insufficient number of arguments.");
+			return false;
+		}
+		
+		
+		if (extraArguments.length < 2) {
+			sender.sendMessage("Insufficient number of arguments.");
+			return false;
+		}
+		
+		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+			
+			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			
+			if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+				sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+				return false;
+			}
+			
+			sender.sendMessage("--- Group Information ---");
+			sender.sendMessage( Faction.getGroupFromFactionByName(extraArguments[1], fac).toString() );
+		}
+		
+		return true;
+	}
+
+
 	private boolean createGroup(CommandSender sender, String[] extraArguments) {
 		// cast
 		Player player = (Player) sender;
@@ -149,7 +234,7 @@ public class Commands implements CommandExecutor{
 			
 			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
 			
-			if (Faction.doesGroupExist( extraArguments[3], fac)) {
+			if (Faction.doesGroupExist( extraArguments[1], fac)) {
 				sender.sendMessage("This group of " + extraArguments[3] + " already exists!" );
 				return false;
 			}
@@ -164,7 +249,7 @@ public class Commands implements CommandExecutor{
 				newGroup = Group.removeAllMembersFromGroup(newGroup);
 				fac.addGroup(newGroup);
 				
-				sender.sendMessage("New group ["+extraArguments[3]+"] created.");
+				sender.sendMessage("New group ["+extraArguments[1]+"] created.");
 				Faction.serialize(fac, fac.getAutoFileName());
 			}
 			
