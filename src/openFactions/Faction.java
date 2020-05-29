@@ -41,17 +41,28 @@ enum relationshipTypes {
 
 public class Faction implements Serializable {
 
-	/**
-	 * 
-	 */
 	private String name;
+	
 	private String dateCreated;
-//	private ArrayList<String> members = new ArrayList<String>();
-
+	
 	private ArrayList<UUID> members = new ArrayList<UUID>();
+	
 	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
+	/** 
+	 * List of land claims made by this faction.
+	 * Encapsulates chunk coordinates, string descriptors, and 
+	 * what group might have exclusive editing access
+	 */
 	private ArrayList<LandClaim> claimList = new ArrayList<LandClaim>();
+	
+	//TODO: reconcile whether we actually need this for anything other than naming files
 	private UUID serialUUID;
+	/**
+	 * The group that new members to the faction
+	 * are put inside of automatically
+	 */
+	private Group defaultGroup;
+	private ArrayList<Group> groups = new ArrayList<Group>(); 
 
 	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claimList) {
 
@@ -83,7 +94,13 @@ public class Faction implements Serializable {
 		this.dateCreated = new Date().toString();
 		this.name = name;
 		this.members.add(personWhoCreatedTheFaction);
-
+		
+		Group adminGroup = Group.createAdminGroup();
+		Group commons = Group.createCommonGroup();
+		adminGroup.addMember(personWhoCreatedTheFaction);
+		this.groups.add(adminGroup);
+		this.groups.add(commons);
+		this.defaultGroup = commons;
 		this.serialUUID = UUID.randomUUID();
 	}
 
@@ -136,7 +153,7 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Nation [name=" + name + ", dateCreated=" + dateCreated + ", members=" + returnListOfNames(members) + ", claimList="
+		return "Nation [name=" + name + ", dateCreated=" + dateCreated + ", members=" + returnListOfNames(getMembers()) + ", claimList="
 				+ claimList + ", serialUUID=" + serialUUID + "]";
 	}
 
@@ -225,6 +242,12 @@ public class Faction implements Serializable {
 		}
 	}
 
+	/**
+	 * Deserializes the faction from the specified *.fbin.
+	 * Needs a nullchecl
+	 * @param fileName the path to the file on disk
+	 * @return faction object or null
+	 */
 	public static Faction deserialize(String fileName) {
 		Faction faction = null;
 
@@ -288,8 +311,6 @@ public class Faction implements Serializable {
 			names.add( Commands.getPlayerNameFromUuid(uuids.get(i)));
 		}
 		
-		
-		
 		return names;
 	}
 	
@@ -309,7 +330,6 @@ public class Faction implements Serializable {
 		}
 		
 		return result;
-		
 	}
 	
 	/**
@@ -343,7 +363,6 @@ public class Faction implements Serializable {
 		
 		}
 		return null;
-		
 	}
 	
 	/**
@@ -360,6 +379,14 @@ public class Faction implements Serializable {
 		}
 		
 		return false;
+	}
+
+	public Group getDefaultGroup() {
+		return defaultGroup;
+	}
+
+	public void setDefaultGroup(Group defaultGroup) {
+		this.defaultGroup = defaultGroup;
 	}
 	
 	

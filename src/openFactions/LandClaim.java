@@ -20,10 +20,10 @@ import org.bukkit.World;
 public class LandClaim implements Serializable {
 
 	private transient Chunk claimedChunk;
-	private Location location;
 	private String claimDescriptor;
 	private int chunkX;
 	private int chunkZ;
+	private Group exclusiveGroup;
 	
 	/**
 	 * Empty constructor; resets chunk value if possible
@@ -49,6 +49,15 @@ public class LandClaim implements Serializable {
 		this.setChunkZ(claimedChunk.getZ());
 		this.setClaimedChunk(claimedChunk);
 		this.claimDescriptor = claimDescriptor;
+	}
+	
+	public LandClaim(Chunk claimedChunk, String claimDescriptor, 
+			Group exclusiveGroup) {
+		this.setChunkX(claimedChunk.getX());
+		this.setChunkZ(claimedChunk.getZ());
+		this.setClaimedChunk(claimedChunk);
+		this.claimDescriptor = claimDescriptor;
+		this.exclusiveGroup = exclusiveGroup;
 	}
 	
 	public void setClaimDescriptor(String claimDescriptor) {
