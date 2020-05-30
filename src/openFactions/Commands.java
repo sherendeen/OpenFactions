@@ -167,10 +167,12 @@ public class Commands implements CommandExecutor{
 		
 		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( !group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
 			sender.sendMessage("You aren't allowed to edit this particular group.");
 			return false;
 		} 
+		
+		
 		
 		
 		return true;
