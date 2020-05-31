@@ -261,7 +261,6 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		System.out.println("about to remove permission from " + groupToEdit.getName());
 		groupToEdit.removePermission(Can.valueOf(extraArguments[2]));
 		
 		//fac.addGroup(groupToEdit);
@@ -309,11 +308,11 @@ public class Commands implements CommandExecutor{
 		}
 		
 		//not sure if it is totally necessary to do this
-		fac.removeGroup(groupToEdit);
+		
 		
 		groupToEdit.addPermission(Can.valueOf(extraArguments[2]));
 		
-		fac.addGroup(groupToEdit);
+		fac.setGroupAtIndex(fac.getGroups().indexOf(groupToEdit), groupToEdit);
 		
 		Faction.serialize(fac, fac.getAutoFileName());
 		
