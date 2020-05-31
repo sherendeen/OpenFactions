@@ -23,7 +23,6 @@ public class Group implements Serializable {
 	
 	public Group(String name, boolean joinable, Period term, boolean termsEnd,
 			int maxMembers,  Can... groupPermissions) {
-		super();
 		this.name = name;
 		this.joinable = joinable;
 		this.term = term;
@@ -38,7 +37,6 @@ public class Group implements Serializable {
 	
 	public Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
 			int maxMembers, Can... groupPermissions) {
-		super();
 		this.name = name;
 		this.members = members;
 		this.joinable = joinable;
@@ -54,9 +52,20 @@ public class Group implements Serializable {
 	
 	public Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
 			int maxMembers, ArrayList<Can> groupPermissions) {
-		super();
 		this.name = name;
 		this.members = members;
+		this.joinable = joinable;
+		this.term = term;
+		this.setTermsEnd(termsEnd);
+		this.maxMembers = maxMembers;
+		
+		this.groupPermissions = groupPermissions;
+		
+	}
+	
+	public Group(String name, boolean joinable, Period term, boolean termsEnd,
+			int maxMembers, ArrayList<Can> groupPermissions) {
+		this.name = name;
 		this.joinable = joinable;
 		this.term = term;
 		this.setTermsEnd(termsEnd);
@@ -173,7 +182,7 @@ public class Group implements Serializable {
 //				return true;
 //			}
 //		}
-		
+		System.out.println(group.toString());
 		for ( int i = 0 ; i < group.getGroupPermissions().size(); i++) {
 			if(group.getGroupPermissions().get(i) == can) {
 				return true;
@@ -246,10 +255,12 @@ public class Group implements Serializable {
 	}
 	
 	public void addPermission(Can permission) {
+		System.out.println("Adding ["+permission.toString()+"] permission from " + this.name + " ");
 		this.groupPermissions.add(permission);
 	}
 	
 	public void removePermission(Can permission) {
+		System.out.println("Removing ["+permission.toString()+"] permission from " + this.name + " ");
 		this.groupPermissions.remove(permission);
 	}
 	

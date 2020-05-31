@@ -46,7 +46,7 @@ public class Faction implements Serializable {
 	private String name;
 	
 	private String dateCreated;
-	
+	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
 	
 	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
@@ -99,6 +99,7 @@ public class Faction implements Serializable {
 		
 		Group adminGroup = Group.createAdminGroup();
 		Group commons = Group.createCommonGroup();
+		System.out.println("Adding user to new faction into admin group");
 		adminGroup.addMember(personWhoCreatedTheFaction);
 		this.groups.add(adminGroup);
 		this.groups.add(commons);
@@ -117,6 +118,10 @@ public class Faction implements Serializable {
 	
 	public void removeGroup(Group group) {
 		this.groups.remove(group);
+	}
+	
+	public void setGroupAtIndex(int index, Group group) {
+		this.groups.get(index).equals(group);
 	}
 	
 	public ArrayList<Group> getGroups() {
@@ -490,7 +495,19 @@ public class Faction implements Serializable {
 		}
 		return null;
 	}
-	
+
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	
 	
 

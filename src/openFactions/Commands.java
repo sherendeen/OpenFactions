@@ -87,8 +87,10 @@ public class Commands implements CommandExecutor{
 				
 			case "creategroup":
 			case "cg":
-				
 				return createGroup(sender, extraArguments);
+			case "desc":
+				return changeFactionDescription(sender,extraArguments);
+				
 				
 			case "join":
 				
@@ -100,10 +102,15 @@ public class Commands implements CommandExecutor{
 				
 			case "leave":
 				return leaveFaction(sender);
+			case "name":
+				
+				return changeFactionName(sender,extraArguments);
+				
+				
 			case "removepermission":
 			case "rp":
 				
-				return removePositionHandler(sender, command, extraArguments);
+				return removePermissionHandler(sender, command, extraArguments);
 			
 			case "owns":
 				
@@ -154,7 +161,7 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
-	private boolean removePositionHandler(CommandSender sender, Command command, String[] extraArguments) {
+	private boolean changeFactionDescription(CommandSender sender, String[] extraArguments) {
 		
 		Player player = (Player) sender;
 		
@@ -171,7 +178,71 @@ public class Commands implements CommandExecutor{
 		
 		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+		if ( Group.doesGroupHavePermission(Can.CHANGE_FACTION_DESC, group )== false ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		if (extraArguments[2] != null) {
+		fac.setDesc(extraArguments[2]);
+		} else {
+			return false;
+		}
+		
+		return true;
+	}
+
+
+	private boolean changeFactionName(CommandSender sender, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.CHANGE_FACTION_NAME, group )== false ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		if (extraArguments[2] != null) {
+		fac.setName(extraArguments[2]);
+		} else {
+			return false;
+		}
+		
+		return true;
+	}
+
+
+	private boolean removePermissionHandler(CommandSender sender, Command command, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.EDIT_GROUPS, group )== false ) {
 			sender.sendMessage("You aren't allowed to edit this particular group.");
 			return false;
 		} 
@@ -183,16 +254,19 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		//not sure if it is totally necessary to do this
-		fac.removeGroup(groupToEdit);
+		//fac.removeGroup(groupToEdit);
 		
 		if (!groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
 			sender.sendMessage("This permission is not in the list of permissions for this group already!");
 			return false;
 		}
 		
+		System.out.println("about to remove permission from " + groupToEdit.getName());
 		groupToEdit.removePermission(Can.valueOf(extraArguments[2]));
 		
-		fac.addGroup(groupToEdit);
+		//fac.addGroup(groupToEdit);
+		
+		fac.setGroupAtIndex(fac.getGroups().indexOf(groupToEdit), groupToEdit);//( fac.getGroups().get(fac.getGroups().indexOf(groupToEdit)).removePermission(Can.valueOf(extraArguments[2]))  );
 		
 		Faction.serialize(fac, fac.getAutoFileName());
 		
@@ -335,20 +409,23 @@ public class Commands implements CommandExecutor{
 			if (Group.doesGroupHavePermission(Can.MAKE_OR_REMOVE_GROUPS, group)) {
 				//inherit from the group you are in but have a different name
 				
+				ArrayList<Can> perms = new ArrayList<Can>();
+				perms.addAll(group.getGroupPermissions());
+				int max = group.getMaxMembers();
+				boolean isJoinable = group.isJoinable();
+				Period pp = group.getTerm();
+				
 				Group newGroup = new Group(extraArguments[1], 
-						group.getMembers(),
-						group.isJoinable(),
-						group.getTerm(),
+						isJoinable,
+						pp,
 						false,
-						group.getMaxMembers(),
-						group.getGroupPermissions());
+						max,
+						perms);
 				
 				//Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
 				//	int maxMembers, Can... groupPermissions)
-				fac.removeGroup(group);
-				Group newOldGroup = Group.removeAllMembersFromGroup(group);
+				//newGroup = Group.removeAllMembersFromGroup(newGroup);
 				// we don't want to inherit the members of the group
-				fac.addGroup(newOldGroup);
 				
 				fac.addGroup(newGroup);
 				
@@ -356,6 +433,8 @@ public class Commands implements CommandExecutor{
 				Faction.serialize(fac, fac.getAutoFileName());
 			}
 			
+		} else {
+			return false;
 		}
 		
 		
