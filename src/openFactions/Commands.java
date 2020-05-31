@@ -28,6 +28,7 @@ import openFactions.CustomNations;
 enum Cmd {
 	ADDPERMISSION,
 	AP,/**ADDPERMISSION ALIAS*/
+	ASSIGN,
 	CLAIM,
 	CREATE,
 	CREATEGROUP,
@@ -76,6 +77,9 @@ public class Commands implements CommandExecutor{
 			case "ap":
 				
 				return addPermissionHandler(sender, command, extraArguments);
+			case "assign":
+				
+				return assignToGroup(sender, extraArguments);
 				
 			case "claim":
 				//Keeping things neat by putting the bulk of the code outside this case block
@@ -161,6 +165,55 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean assignToGroup(CommandSender sender, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.ASSIGN_GROUPS, group )== false ) {
+			sender.sendMessage("You aren't allowed to assign people to a group.");
+			return false;
+		} 
+		
+		Group groupToEdit = Faction.getGroupFromFactionByName(
+				extraArguments[1], fac);
+		
+		UUID uuid = Commands.getUuidFromPlayerName(extraArguments[2]);
+		
+		if (uuid == null) {
+			sender.sendMessage("Specified player does not exist.");
+			return false;
+		}
+		
+		
+		if (groupToEdit.getMembers().contains(uuid)) {
+			
+			sender.sendMessage("Player is already in group called " 
+					+ extraArguments[1] + ".");
+			return false;
+		}
+		group.removeMember(uuid);
+		groupToEdit.addMember(uuid);
+		
+		fac.setGroupAtIndex(fac.getGroups().lastIndexOf(group), group);
+		fac.setGroupAtIndex(fac.getGroups().indexOf(groupToEdit), groupToEdit);
+		
+		return true;
+	}
+
+
 	private boolean changeFactionDescription(CommandSender sender, String[] extraArguments) {
 		
 		Player player = (Player) sender;
