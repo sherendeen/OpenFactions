@@ -14,7 +14,7 @@ public class Group implements Serializable {
 	private boolean termsEnd = false;
 	private int maxMembers = -1;
 	
-	private Can[] groupPermissions;
+	private ArrayList<Can> groupPermissions;
 	
 	public Group() {}
 	public Group(String name) {
@@ -48,7 +48,7 @@ public class Group implements Serializable {
 	public String toString() {
 		return "Group [name=" + name + ", members=" + members + ", joinable=" + joinable + ", term=" + term
 				+ ", termsEnd=" + termsEnd + ", maxMembers=" + maxMembers + ", groupPermissions="
-				+ Arrays.toString(groupPermissions) + "]";
+				+ (groupPermissions) + "]";
 	}
 	
 	public String getName() {
@@ -163,6 +163,19 @@ public class Group implements Serializable {
 		return group;
 	}
 	
+	public static boolean doesStringMatchAValidPermission(String string) {
+		
+		for ( int i = 0 ; i < Can.values().length; i++) {
+			if (Can.values()[i].toString().equalsIgnoreCase(string)) {
+				return true;
+			} else if (Can.values()[i].toString().replace("_","").equalsIgnoreCase(string)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Returns new group, empties old group
 	 * @param oldGroup group to have members transferred from
@@ -183,11 +196,38 @@ public class Group implements Serializable {
 	public void setTermsEnd(boolean termsEnd) {
 		this.termsEnd = termsEnd;
 	}
-	public Can[] getGroupPermissions() {
+	
+	public ArrayList<Can> getGroupPermissions() {
 		return this.groupPermissions;
 	}
+	
+	
 	public void setGroupPermissions(Can[] groupPermissions2) {
-		this.groupPermissions = groupPermissions2;
+		
+		for (Can can : groupPermissions2) {
+			this.groupPermissions.add(can);
+		}
+		
+		//this.groupPermissions = groupPermissions2;
+	}
+	
+	public void addPermission(Can permission) {
+		this.groupPermissions.add(permission);
+	}
+	
+	public void removePermission(Can permission) {
+		
+	}
+	
+	public boolean hasPermission(Can permission) {
+		
+		for (Can can : this.groupPermissions) {
+			if (can.equals(permission)) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 }

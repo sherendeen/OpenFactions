@@ -25,6 +25,8 @@ import org.bukkit.entity.Player;
 import openFactions.CustomNations;
 
 enum Cmd {
+	ADDPERMISSION,
+	AP,/**ADDPERMISSION ALIAS*/
 	CLAIM,
 	CREATE,
 	CREATEGROUP,
@@ -33,6 +35,8 @@ enum Cmd {
 	LIST,
 	LEAVE,
 	OWNS,
+	REMOVEPERMISSION,
+	RP,/**RemovePermission Alias*/
 	SETGROUP,
 	SETPERMISSION,
 	SP,/** alias for SetPermission */
@@ -67,6 +71,10 @@ public class Commands implements CommandExecutor{
 		if(command.getName().equalsIgnoreCase("of") && extraArguments.length > 0) {
 			
 			switch (extraArguments[0].toLowerCase()) {
+			case "addpermission":
+			case "ap":
+				
+				return addPermissionHandler(sender, command, extraArguments);
 				
 			case "claim":
 				//Keeping things neat by putting the bulk of the code outside this case block
@@ -91,11 +99,17 @@ public class Commands implements CommandExecutor{
 				
 			case "leave":
 				return leaveFaction(sender);
+			case "removeposition":
+			case "rp":
+				
+				return removePositionHandler(sender, command, extraArguments);
+			
 			case "owns":
 				
 				return returnWhoOwns(sender);
 				
 			case "unclaim":
+				
 				
 				return unclaimLand(sender,command,extraArguments);
 				
@@ -110,7 +124,7 @@ public class Commands implements CommandExecutor{
 			case "setpermission":
 			case "sp":
 				
-				return addPermissionHandler(sender, command, extraArguments);
+				return false;
 				
 			case "show":
 				return showFactionInformation(sender, extraArguments);
@@ -139,8 +153,100 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean removePositionHandler(CommandSender sender, Command command, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		Group groupToEdit = Faction.getGroupFromFactionByName(extraArguments[1], fac);
+		
+		if (!Group.doesStringMatchAValidPermission(extraArguments[2])) {
+			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
+			return false;
+		}
+		//not sure if it is totally necessary to do this
+		fac.removeGroup(groupToEdit);
+		
+		if (!groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
+			sender.sendMessage("This permission is not in the list of permissions for this group already!");
+			return false;
+		}
+		
+		groupToEdit.removePermission(Can.valueOf(extraArguments[2]));
+		
+		fac.addGroup(groupToEdit);
+		
+		Faction.serialize(fac, fac.getAutoFileName());
+		
+		return true;
+	}
+
+
 	private boolean addPermissionHandler(CommandSender sender, Command command, String[] extraArguments) {
 		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		Group groupToEdit = Faction.getGroupFromFactionByName(extraArguments[1], fac);
+		
+		if (!Group.doesStringMatchAValidPermission(extraArguments[2])) {
+			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
+			return false;
+		}
+		
+		if (groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
+			sender.sendMessage("This permission has already been added.");
+			return false;
+		}
+		
+		//not sure if it is totally necessary to do this
+		fac.removeGroup(groupToEdit);
+		
+		groupToEdit.addPermission(Can.valueOf(extraArguments[2]));
+		
+		fac.addGroup(groupToEdit);
+		
+		Faction.serialize(fac, fac.getAutoFileName());
+		
+		return true;
+	}
+
+
+	private boolean isValid(CommandSender sender, String[] extraArguments) {
 		Player player = (Player) sender;
 		
 		if (player == null) { 
@@ -157,24 +263,6 @@ public class Commands implements CommandExecutor{
 			sender.sendMessage("You are not in a faction.");
 			return false;
 		} 
-		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
-		
-		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
-			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
-			return false;
-		}
-		
-		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
-		
-		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
-			sender.sendMessage("You aren't allowed to edit this particular group.");
-			return false;
-		} 
-		
-		
-		
-		
 		return true;
 	}
 
