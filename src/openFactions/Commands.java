@@ -26,6 +26,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_15_R1.CraftChunk;
 import org.bukkit.entity.Player;
 
+import javafx.scene.input.DataFormat;
 import openFactions.CustomNations;
 
 enum Cmd {
@@ -51,7 +52,7 @@ public class Commands implements CommandExecutor{
 		this.plugin = plugin;
 	}
 	
-	SimpleDateFormat dataFormat = new SimpleDateFormat("dd/MM/yyyy");
+	SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
@@ -61,6 +62,7 @@ public class Commands implements CommandExecutor{
 		} else {
 			player = (Player) sender;
 		}
+		dateFormat.setLenient(false);
 		
 		
 		
@@ -147,15 +149,13 @@ public class Commands implements CommandExecutor{
 		String visaClass = "0";
 		int visaClassInteger = 0;
 		
-		//Sender has to specify a player, more specifically, a real one
-		
+		//Sender has to specify a player, more specifically, a real one	
 		if(extraArguments.length < 2) {
 			sender.sendMessage("You must specify a player!");
 			return true;
 		}
 		
-		//If the player is not real, exit.
-		
+		//If the player is not real, exit.		
 		try {
 			visaHolder = getUuidFromPlayerName(extraArguments[1]);
 		} catch(NullPointerException e) {
@@ -163,27 +163,6 @@ public class Commands implements CommandExecutor{
 			return true;
 		}
 		
-		
-		//Exception handling...		
-		try {
-			visaClass = extraArguments[3]; 
-			visaClassInteger = Integer.valueOf(visaClass);
-			expirationDateString = extraArguments[2];
-			expirationDate = dataFormat.parse(expirationDateString);
-		} catch (NumberFormatException e) {
-			sender.sendMessage("Visa class must be a number from 0 to 4");
-			return true;
-		} catch (ParseException e) {
-			sender.sendMessage("Invalid date format! The correct format is: dd/mm/yyyy");
-			return true;
-		} catch (ArrayIndexOutOfBoundsException e) {
-			//This is okay, the player doesn't have to specify a visa class, as it defaults to zero.
-			//The player also does not have to specify an expiration date, as it will default to none
-		} catch (NullPointerException e) {
-			//This is okay, the player doesn't have to specify a visa class, as it defaults to zero.
-			//The player also does not have to specify an expiration date, as it will default to none
-		}
-
 		if(visaHolder != null) {
 			
 			if(Faction.isPlayerInAnyFaction(player.getName()) == false) {
@@ -201,23 +180,70 @@ public class Commands implements CommandExecutor{
 					sender.sendMessage("That player already has a visa.");
 					return true;
 				}
-			}
-			//In the event the expiration date is null, the second argument will be the visa class, but only if it is not null.
-			if(expirationDate == null) {
-				if(extraArguments[2] != null) {
-					visaClass = extraArguments[2];
-				}
+			}				
+			switch(extraArguments.length) {
+			//If there is only a player name in the arguments, grant a class 0 visa with no expiration date.	
+			case(2): 
 				Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
 				senderFaction.addVisa(visa);
 				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
-				return true;			
-			}
-			//If there is an expiration date, then the third argument will be the visa class, or zero if there is no third argument.
-			Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
-			senderFaction.addVisa(visa);
-			sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
-			return true;
-			
+				return true; 		
+			case(3):		
+				try {
+					expirationDateString = extraArguments[2];
+					expirationDate = dateFormat.parse(expirationDateString);
+				} catch (ParseException e) {e.printStackTrace();/* This is fine, if it's not a date, then it is likely to be a visa class */}
+			    //If there is a second argument, but it is an expiration date, then the expiration date will be the 2nd argument, and the class will be zero.
+				if (expirationDate instanceof Date) {
+					Visa visa2 = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
+					senderFaction.addVisa(visa2);
+					sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
+					return true;			
+				}
+				//If there is a second argument, but it is not an expiration date, then the visa class will be the 2nd argument
+				try {
+					visaClass = extraArguments[2]; 
+					visaClassInteger = Integer.valueOf(visaClass);
+					if(visaClassInteger > 5 || visaClassInteger < 0) {
+						sender.sendMessage("Visa class must be a number from 0 to 4");
+						return true;
+					}
+				}
+				catch (NumberFormatException e) {
+					sender.sendMessage("Visa class must be a number");
+					return true;
+				}
+				Visa visa2 = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
+				senderFaction.addVisa(visa2);
+				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
+				return true;
+			//If there are three arguments, then they will represent Player, Expiration Date and Class
+			case(4): 
+				//Class has to be from 0-4
+				//Expiration date must be valid
+				try {
+					expirationDateString = extraArguments[2];
+					expirationDate = dateFormat.parse(expirationDateString);
+					visaClass = extraArguments[3]; 
+					visaClassInteger = Integer.valueOf(visaClass);
+					if(visaClassInteger > 5 || visaClassInteger < 0) {
+						sender.sendMessage("Visa class must be a number from 0 to 4");
+						return true;
+					}
+				}
+				catch (NumberFormatException e) {
+					sender.sendMessage("Visa class must be a number from 0 to 4");
+					return true;
+				} catch (ParseException e) {
+					sender.sendMessage("Incorrect format, the correct date format is mm/dd/yyyy");
+					return true;
+				}
+				Visa visa3 = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
+				senderFaction.addVisa(visa3);
+				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
+				return true;
+					
+			}		
 		
 		}
 		return false;
