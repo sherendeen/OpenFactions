@@ -11,6 +11,7 @@
 
 package openFactions;
 
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -312,7 +313,7 @@ public class Commands implements CommandExecutor{
 			return false; 
 		}
 		
-		if (extraArguments.length == 2) {
+		if (extraArguments.length < 2) {
 			sender.sendMessage("Insufficient number of arguments.");
 			return false;
 		}
@@ -325,7 +326,7 @@ public class Commands implements CommandExecutor{
 			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
 			
 			if (Faction.doesGroupExist( extraArguments[1], fac)) {
-				sender.sendMessage("This group of " + extraArguments[3] + " already exists!" );
+				sender.sendMessage("This group of " + extraArguments[1] + " already exists!" );
 				return false;
 			}
 			
@@ -333,10 +334,22 @@ public class Commands implements CommandExecutor{
 			
 			if (Group.doesGroupHavePermission(Can.MAKE_OR_REMOVE_GROUPS, group)) {
 				//inherit from the group you are in but have a different name
-				Group newGroup = group;
-				newGroup.setName(extraArguments[3]);
+				
+				Group newGroup = new Group(extraArguments[1], 
+						group.getMembers(),
+						group.isJoinable(),
+						group.getTerm(),
+						false,
+						group.getMaxMembers(),
+						group.getGroupPermissions());
+				
+				//Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
+				//	int maxMembers, Can... groupPermissions)
+				fac.removeGroup(group);
+				Group newOldGroup = Group.removeAllMembersFromGroup(group);
 				// we don't want to inherit the members of the group
-				newGroup = Group.removeAllMembersFromGroup(newGroup);
+				fac.addGroup(newOldGroup);
+				
 				fac.addGroup(newGroup);
 				
 				sender.sendMessage("New group ["+extraArguments[1]+"] created.");
@@ -459,6 +472,14 @@ public class Commands implements CommandExecutor{
 			for (Faction fac : CustomNations.factions) {
 				if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
 					fac.addMember(player.getUniqueId());
+					Group def = fac.getDefaultGroup();
+					
+					fac.removeGroup(def);
+					
+					def.addMember(player.getUniqueId());
+					
+					fac.addGroup(def);
+					
 					sender.sendMessage("You have joined " + fac.getName()+".");
 				}
 				
@@ -494,6 +515,8 @@ public class Commands implements CommandExecutor{
 		Faction faction = new Faction(extraArguments[1], player.getUniqueId());
 		
 		CustomNations.factions.add(faction);
+		sender.sendMessage("You have created " + faction.getName() + ".");
+		
 		Faction.serialize(faction, faction.getAutoFileName());
 		
 		return true;

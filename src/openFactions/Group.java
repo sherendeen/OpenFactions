@@ -8,13 +8,13 @@ import java.time.Period;
 
 public class Group implements Serializable {
 	private String name;
-	private ArrayList<UUID> members;
+	private ArrayList<UUID> members = new ArrayList<UUID>();
 	private boolean joinable = false;
 	private Period term = Period.ofDays(2);
 	private boolean termsEnd = false;
 	private int maxMembers = -1;
 	
-	private ArrayList<Can> groupPermissions;
+	private ArrayList<Can> groupPermissions = new ArrayList<Can>();
 	
 	public Group() {}
 	public Group(String name) {
@@ -29,7 +29,11 @@ public class Group implements Serializable {
 		this.term = term;
 		this.setTermsEnd(termsEnd);
 		this.maxMembers = maxMembers;
-		this.setGroupPermissions(groupPermissions);
+		
+		for (int i = 0; i < groupPermissions.length; i++) {
+			this.groupPermissions.add(groupPermissions[i]);
+		}
+		
 	}
 	
 	public Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
@@ -41,7 +45,25 @@ public class Group implements Serializable {
 		this.term = term;
 		this.setTermsEnd(termsEnd);
 		this.maxMembers = maxMembers;
-		this.setGroupPermissions(groupPermissions);
+		
+		for (int i = 0; i < groupPermissions.length; i++) {
+			this.groupPermissions.add(groupPermissions[i]);
+		}
+		
+	}
+	
+	public Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
+			int maxMembers, ArrayList<Can> groupPermissions) {
+		super();
+		this.name = name;
+		this.members = members;
+		this.joinable = joinable;
+		this.term = term;
+		this.setTermsEnd(termsEnd);
+		this.maxMembers = maxMembers;
+		
+		this.groupPermissions = groupPermissions;
+		
 	}
 	
 	@Override
@@ -159,8 +181,8 @@ public class Group implements Serializable {
 		for (UUID uuid : group.getMembers()) {
 			group.removeMember(uuid);
 		}
-		
-		return group;
+		Group result = group;
+		return result;
 	}
 	
 	public static boolean doesStringMatchAValidPermission(String string) {
@@ -202,9 +224,9 @@ public class Group implements Serializable {
 	}
 	
 	
-	public void setGroupPermissions(Can[] groupPermissions2) {
+	public void setGroupPermissions(ArrayList<Can> groupPermissions) {
 		
-		for (Can can : groupPermissions2) {
+		for (Can can : groupPermissions) {
 			this.groupPermissions.add(can);
 		}
 		
@@ -216,7 +238,7 @@ public class Group implements Serializable {
 	}
 	
 	public void removePermission(Can permission) {
-		
+		this.groupPermissions.remove(permission);
 	}
 	
 	public boolean hasPermission(Can permission) {
