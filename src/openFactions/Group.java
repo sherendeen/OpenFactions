@@ -168,19 +168,31 @@ public class Group implements Serializable {
 	}
 	
 	public static boolean doesGroupHavePermission(Can can, Group group) {
-		for (Can permission : group.getGroupPermissions()) {
-			if (permission.equals(can)) {
+//		for (Can permission : group.getGroupPermissions()) {
+//			if (permission.equals(can)) {
+//				return true;
+//			}
+//		}
+		
+		for ( int i = 0 ; i < group.getGroupPermissions().size(); i++) {
+			if(group.getGroupPermissions().get(i) == can) {
 				return true;
 			}
 		}
+		
 		return false;
 	}
 	
 	public static Group removeAllMembersFromGroup(Group group) {
 		
-		for (UUID uuid : group.getMembers()) {
-			group.removeMember(uuid);
+//		for (UUID uuid : group.getMembers()) {
+//			group.removeMember(uuid);
+//		}
+		
+		for ( int i = 0 ; i < group.getMembers().size(); i++) {
+			group.removeMember(group.getMembers().get(i));
 		}
+		
 		Group result = group;
 		return result;
 	}

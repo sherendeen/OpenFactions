@@ -100,7 +100,7 @@ public class Commands implements CommandExecutor{
 				
 			case "leave":
 				return leaveFaction(sender);
-			case "removeposition":
+			case "removepermission":
 			case "rp":
 				
 				return removePositionHandler(sender, command, extraArguments);
@@ -276,16 +276,16 @@ public class Commands implements CommandExecutor{
 			return false; 
 		}
 		
-		if (extraArguments.length == 2) {
-			sender.sendMessage("Insufficient number of arguments.");
-			return false;
-		}
-		
-		
-		if (extraArguments.length < 2) {
-			sender.sendMessage("Insufficient number of arguments.");
-			return false;
-		}
+//		if (extraArguments.length == 2) {
+//			sender.sendMessage("Insufficient number of arguments.");
+//			return false;
+//		}
+//		
+//		
+//		if (extraArguments.length < 1) {
+//			sender.sendMessage("Insufficient number of arguments.");
+//			return false;
+//		}
 		
 		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			
@@ -397,6 +397,9 @@ public class Commands implements CommandExecutor{
 
 
 	private boolean showFactionInformation(CommandSender sender, String[] extraArguments) {
+		
+		sender.sendMessage(extraArguments[1]);
+		
 		if (!Faction.doesFactionExist(extraArguments[1])) {
 			return false;
 		}
