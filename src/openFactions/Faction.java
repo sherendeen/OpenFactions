@@ -46,6 +46,7 @@ public class Faction implements Serializable {
 	private String name;
 	
 	private String dateCreated;
+	private ArrayList<Visa> visas = new ArrayList<Visa>();
 	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
 	
@@ -231,7 +232,24 @@ public class Faction implements Serializable {
 	public ArrayList<UUID> getMembers() {
 		return members;
 	}
-
+	/**
+	 * Returns the list of visas currently in the faction
+	 * @author ZettaX
+	 * @return
+	 */
+	
+	public ArrayList<Visa> getVisas() {
+		return visas;
+	}
+	
+	public void removeVisa(Visa visa) {
+		this.visas.remove(visa);
+	}
+	
+	public void addVisa(Visa visa) {
+		this.visas.add(visa);
+	}
+	
 	/**
 	 * Returns the faction's list of claims
 	 * 
@@ -507,8 +525,4 @@ public class Faction implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
-
-	
-	
-
 }
