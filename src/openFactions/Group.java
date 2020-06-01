@@ -1,7 +1,6 @@
 package openFactions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.UUID;
 import java.io.Serializable;
 import java.time.Period;

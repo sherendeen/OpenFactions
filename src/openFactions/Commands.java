@@ -24,10 +24,7 @@ import java.util.Date;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_15_R1.CraftChunk;
 import org.bukkit.entity.Player;
-
-import javafx.scene.input.DataFormat;
 import openFactions.CustomNations;
 
 enum Cmd {

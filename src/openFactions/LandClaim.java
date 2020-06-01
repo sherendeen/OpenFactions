@@ -14,7 +14,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.bukkit.Chunk;
-import org.bukkit.Location;
 import org.bukkit.World;
 
 public class LandClaim implements Serializable {
