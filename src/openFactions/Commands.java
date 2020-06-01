@@ -11,6 +11,7 @@
 
 package openFactions;
 
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -25,14 +26,25 @@ import org.bukkit.entity.Player;
 import openFactions.CustomNations;
 
 enum Cmd {
+	ADDPERMISSION,
+	AP,/**ADDPERMISSION ALIAS*/
+	ASSIGN,
 	CLAIM,
 	CREATE,
+	CREATEGROUP,
+	CG,/**alias for CreateGroup*/
 	JOIN,
 	LIST,
 	LEAVE,
 	OWNS,
+	REMOVEPERMISSION,
+	RP,/**RemovePermission Alias*/
+	SETGROUP,
+	SETPERMISSION,
+	SP,/** alias for SetPermission */
 	SETRELATION,
 	SHOW,
+	SHOWGROUP,
 	SHOWRELATIONS,
 	UNCLAIM,
 	UNCLAIMALL,
@@ -61,6 +73,13 @@ public class Commands implements CommandExecutor{
 		if(command.getName().equalsIgnoreCase("of") && extraArguments.length > 0) {
 			
 			switch (extraArguments[0].toLowerCase()) {
+			case "addpermission":
+			case "ap":
+				
+				return addPermissionHandler(sender, command, extraArguments);
+			case "assign":
+				
+				return assignToGroup(sender, extraArguments);
 				
 			case "claim":
 				//Keeping things neat by putting the bulk of the code outside this case block
@@ -70,27 +89,39 @@ public class Commands implements CommandExecutor{
 				
 				return createFaction(sender, extraArguments);
 				
+			case "creategroup":
+			case "cg":
+				return createGroup(sender, extraArguments);
+			case "desc":
+				return changeFactionDescription(sender,extraArguments);
+				
+				
 			case "join":
 				
 				return joinFaction(sender, extraArguments);
 				
 			case "list":
-				//TODO: list faction names and number of members
-				//instead of showing entire toString() for each faction
-				sender.sendMessage("List of factions - Output");
 				
-				for ( int i = 0 ; i < CustomNations.factions.size(); i++ ) {
-					sender.sendMessage(CustomNations.factions.get(i).toString());
-				}
-				return true;
+				return listFactions(sender);
 				
 			case "leave":
 				return leaveFaction(sender);
+			case "name":
+				
+				return changeFactionName(sender,extraArguments);
+				
+				
+			case "removepermission":
+			case "rp":
+				
+				return removePermissionHandler(sender, command, extraArguments);
+			
 			case "owns":
 				
 				return returnWhoOwns(sender);
 				
 			case "unclaim":
+				
 				
 				return unclaimLand(sender,command,extraArguments);
 				
@@ -102,9 +133,17 @@ public class Commands implements CommandExecutor{
 				
 				return showWhoIsReport(sender,extraArguments);
 
-			case "show":
+			case "setpermission":
+			case "sp":
 				
+				return false;
+				
+			case "show":
 				return showFactionInformation(sender, extraArguments);
+			case "showgroup":
+				
+				return showGroup(sender, extraArguments);
+				
 			case "setrelation":
 				
 				return setRelation(sender,extraArguments); 
@@ -112,8 +151,12 @@ public class Commands implements CommandExecutor{
 			case "showrelations":
 				
 				return showRelations(sender, extraArguments);
-          
+			case "help":
 			default:
+				sender.sendMessage("--- OpenFactions Commands ---");
+				for (int i = 0; i <  Cmd.values().length; i++) {
+					sender.sendMessage(Cmd.values()[i].toString());
+				}
 				return true;
 			}
 			
@@ -122,6 +165,345 @@ public class Commands implements CommandExecutor{
 		}
 	}
 	
+	private boolean assignToGroup(CommandSender sender, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.ASSIGN_GROUPS, group )== false ) {
+			sender.sendMessage("You aren't allowed to assign people to a group.");
+			return false;
+		} 
+		
+		Group groupToEdit = Faction.getGroupFromFactionByName(
+				extraArguments[1], fac);
+		
+		UUID uuid = Commands.getUuidFromPlayerName(extraArguments[2]);
+		
+		if (uuid == null) {
+			sender.sendMessage("Specified player does not exist.");
+			return false;
+		}
+		
+		
+		if (groupToEdit.getMembers().contains(uuid)) {
+			
+			sender.sendMessage("Player is already in group called " 
+					+ extraArguments[1] + ".");
+			return false;
+		}
+		group.removeMember(uuid);
+		groupToEdit.addMember(uuid);
+		
+		fac.setGroupAtIndex(fac.getGroups().lastIndexOf(group), group);
+		fac.setGroupAtIndex(fac.getGroups().indexOf(groupToEdit), groupToEdit);
+		
+		return true;
+	}
+
+
+	private boolean changeFactionDescription(CommandSender sender, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.CHANGE_FACTION_DESC, group )== false ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		if (extraArguments[2] != null) {
+		fac.setDesc(extraArguments[2]);
+		} else {
+			return false;
+		}
+		
+		return true;
+	}
+
+
+	private boolean changeFactionName(CommandSender sender, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.CHANGE_FACTION_NAME, group )== false ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		if (extraArguments[2] != null) {
+		fac.setName(extraArguments[2]);
+		} else {
+			return false;
+		}
+		
+		return true;
+	}
+
+
+	private boolean removePermissionHandler(CommandSender sender, Command command, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( Group.doesGroupHavePermission(Can.EDIT_GROUPS, group )== false ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		Group groupToEdit = Faction.getGroupFromFactionByName(extraArguments[1], fac);
+		
+		if (!Group.doesStringMatchAValidPermission(extraArguments[2])) {
+			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
+			return false;
+		}
+		//not sure if it is totally necessary to do this
+		//fac.removeGroup(groupToEdit);
+		
+		if (!groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
+			sender.sendMessage("This permission is not in the list of permissions for this group already!");
+			return false;
+		}
+		
+		groupToEdit.removePermission(Can.valueOf(extraArguments[2]));
+		
+		//fac.addGroup(groupToEdit);
+		
+		fac.setGroupAtIndex(fac.getGroups().indexOf(groupToEdit), groupToEdit);//( fac.getGroups().get(fac.getGroups().indexOf(groupToEdit)).removePermission(Can.valueOf(extraArguments[2]))  );
+		
+		Faction.serialize(fac, fac.getAutoFileName());
+		
+		return true;
+	}
+
+
+	private boolean addPermissionHandler(CommandSender sender, Command command, String[] extraArguments) {
+		
+		Player player = (Player) sender;
+		
+		if(!isValid(sender, extraArguments)) {
+			return false;
+		}
+		
+		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		
+		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			return false;
+		}
+		
+		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		
+		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+			sender.sendMessage("You aren't allowed to edit this particular group.");
+			return false;
+		} 
+		
+		Group groupToEdit = Faction.getGroupFromFactionByName(extraArguments[1], fac);
+		
+		if (!Group.doesStringMatchAValidPermission(extraArguments[2])) {
+			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
+			return false;
+		}
+		
+		if (groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
+			sender.sendMessage("This permission has already been added.");
+			return false;
+		}
+		
+		//not sure if it is totally necessary to do this
+		
+		
+		groupToEdit.addPermission(Can.valueOf(extraArguments[2]));
+		
+		fac.setGroupAtIndex(fac.getGroups().indexOf(groupToEdit), groupToEdit);
+		
+		Faction.serialize(fac, fac.getAutoFileName());
+		
+		return true;
+	}
+
+
+	private boolean isValid(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage("You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length < 3) {
+			sender.sendMessage("Insufficient number of arguments.");
+			return false;
+		}
+		
+		if (!Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+			sender.sendMessage("You are not in a faction.");
+			return false;
+		} 
+		return true;
+	}
+
+
+	private boolean showGroup(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage("You cannot issue this command as console.");
+			return false; 
+		}
+		
+//		if (extraArguments.length == 2) {
+//			sender.sendMessage("Insufficient number of arguments.");
+//			return false;
+//		}
+//		
+//		
+//		if (extraArguments.length < 1) {
+//			sender.sendMessage("Insufficient number of arguments.");
+//			return false;
+//		}
+		
+		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+			
+			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			
+			if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+				sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+				return false;
+			}
+			
+			sender.sendMessage("--- Group Information ---");
+			sender.sendMessage( Faction.getGroupFromFactionByName(extraArguments[1], fac).toString() );
+		}
+		
+		return true;
+	}
+
+
+	private boolean createGroup(CommandSender sender, String[] extraArguments) {
+		// cast
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage("You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length < 2) {
+			sender.sendMessage("Insufficient number of arguments.");
+			return false;
+		}
+		
+		
+		
+		//determine if player is in a faction
+		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+			
+			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			
+			if (Faction.doesGroupExist( extraArguments[1], fac)) {
+				sender.sendMessage("This group of " + extraArguments[1] + " already exists!" );
+				return false;
+			}
+			
+			Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+			
+			if (Group.doesGroupHavePermission(Can.MAKE_OR_REMOVE_GROUPS, group)) {
+				//inherit from the group you are in but have a different name
+				
+				ArrayList<Can> perms = new ArrayList<Can>();
+				perms.addAll(group.getGroupPermissions());
+				int max = group.getMaxMembers();
+				boolean isJoinable = group.isJoinable();
+				Period pp = group.getTerm();
+				
+				Group newGroup = new Group(extraArguments[1], 
+						isJoinable,
+						pp,
+						false,
+						max,
+						perms);
+				
+				//Group(String name, ArrayList<UUID> members, boolean joinable, Period term, boolean termsEnd,
+				//	int maxMembers, Can... groupPermissions)
+				//newGroup = Group.removeAllMembersFromGroup(newGroup);
+				// we don't want to inherit the members of the group
+				
+				fac.addGroup(newGroup);
+				
+				sender.sendMessage("New group ["+extraArguments[1]+"] created.");
+				Faction.serialize(fac, fac.getAutoFileName());
+			}
+			
+		} else {
+			return false;
+		}
+		
+		
+		return true;
+	}
+
+
+	private boolean listFactions(CommandSender sender) {
+		sender.sendMessage("List of factions - Output");
+		
+		for ( int i = 0 ; i < CustomNations.factions.size(); i++ ) {
+			sender.sendMessage(CustomNations.factions.get(i).toString());
+		}
+		return true;
+	}
+
+
 	private boolean showWhoIsReport(CommandSender sender, String[] extraArguments) {
 		UUID uuid = getUuidFromPlayerName(extraArguments[1]);
 		
@@ -146,6 +528,9 @@ public class Commands implements CommandExecutor{
 
 
 	private boolean showFactionInformation(CommandSender sender, String[] extraArguments) {
+		
+		sender.sendMessage(extraArguments[1]);
+		
 		if (!Faction.doesFactionExist(extraArguments[1])) {
 			return false;
 		}
@@ -221,6 +606,14 @@ public class Commands implements CommandExecutor{
 			for (Faction fac : CustomNations.factions) {
 				if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
 					fac.addMember(player.getUniqueId());
+					Group def = fac.getDefaultGroup();
+					
+					fac.removeGroup(def);
+					
+					def.addMember(player.getUniqueId());
+					
+					fac.addGroup(def);
+					
 					sender.sendMessage("You have joined " + fac.getName()+".");
 				}
 				
@@ -256,6 +649,8 @@ public class Commands implements CommandExecutor{
 		Faction faction = new Faction(extraArguments[1], player.getUniqueId());
 		
 		CustomNations.factions.add(faction);
+		sender.sendMessage("You have created " + faction.getName() + ".");
+		
 		Faction.serialize(faction, faction.getAutoFileName());
 		
 		return true;
