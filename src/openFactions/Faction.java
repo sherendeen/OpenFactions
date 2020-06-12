@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
-import java.io.File;
 
 /**
  * 
@@ -41,17 +40,29 @@ enum relationshipTypes {
 
 public class Faction implements Serializable {
 
-	/**
-	 * 
-	 */
 	private String name;
+	
 	private String dateCreated;
-//	private ArrayList<String> members = new ArrayList<String>();
-
+	private ArrayList<Visa> visas = new ArrayList<Visa>();
+	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
+	
 	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
+	/** 
+	 * List of land claims made by this faction.
+	 * Encapsulates chunk coordinates, string descriptors, and 
+	 * what group might have exclusive editing access
+	 */
 	private ArrayList<LandClaim> claimList = new ArrayList<LandClaim>();
+	
+	//TODO: reconcile whether we actually need this for anything other than naming files
 	private UUID serialUUID;
+	/**
+	 * The group that new members to the faction
+	 * are put inside of automatically
+	 */
+	private Group defaultGroup;
+	private ArrayList<Group> groups = new ArrayList<Group>(); 
 
 	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claimList) {
 
@@ -83,10 +94,39 @@ public class Faction implements Serializable {
 		this.dateCreated = new Date().toString();
 		this.name = name;
 		this.members.add(personWhoCreatedTheFaction);
-
+		
+		Group adminGroup = Group.createAdminGroup();
+		Group commons = Group.createCommonGroup();
+		System.out.println("Adding user to new faction into admin group");
+		adminGroup.addMember(personWhoCreatedTheFaction);
+		this.groups.add(adminGroup);
+		this.groups.add(commons);
+		this.defaultGroup = commons;
+		
 		this.serialUUID = UUID.randomUUID();
 	}
 
+	public void setGroups(ArrayList<Group> groups) {
+		this.groups = groups;
+	}
+	
+	public void addGroup(Group group) {
+		this.groups.add(group);
+	}
+	
+	public void removeGroup(Group group) {
+		this.groups.remove(group);
+	}
+	
+	public void setGroupAtIndex(int index, Group group) {
+		this.groups.get(index).equals(group);
+	}
+	
+	public ArrayList<Group> getGroups() {
+		return this.groups;
+	}
+	
+	
 	/**
 	 * Returns the readonly UUID. Must stay unique.
 	 * 
@@ -136,8 +176,38 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "Nation [name=" + name + ", dateCreated=" + dateCreated + ", members=" + returnListOfNames(members) + ", claimList="
-				+ claimList + ", serialUUID=" + serialUUID + "]";
+		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + returnListOfNames(getMembers()) + ", claimList: {"
+				+ getArrayListOfCoordinates(this.claimList) + "}, groups: " + getListOfGroupNames(groups) + ", default group upon joining: "+this.defaultGroup.getName();
+	}
+
+	private ArrayList<String> getListOfGroupNames(ArrayList<Group> groups) {
+		ArrayList<String> results = new ArrayList<String>();
+		
+		for ( Group group : groups) {
+			results.add(group.getName());
+		}
+		
+		return results;
+	}
+
+	public static String[] getArrayOfCoordinates(ArrayList<LandClaim> claims) {
+		
+		String[] array = new String[claims.size()];
+		
+		for ( int i = 0 ; i < array.length; i++) {
+			array[i] =  (i==0) ? "[" : ",["+ claims.get(i).getChunkX() + ", " + claims.get(i).getChunkZ()+"]";
+		}
+		
+		return array;
+	}
+	
+	public static ArrayList<String> getArrayListOfCoordinates(ArrayList<LandClaim> claims) {
+		ArrayList<String> coords = new ArrayList<String>();
+		for ( LandClaim lc : claims) {
+			String result = (lc.getClaimDescriptor().isEmpty()) ? "] " : "] - ``"+ lc.getClaimDescriptor() +"`` ";
+			coords.add(" ["+lc.getChunkX() + ", " +lc.getChunkZ() + result);
+		}
+		return coords;
 	}
 
 	/**
@@ -159,7 +229,24 @@ public class Faction implements Serializable {
 	public ArrayList<UUID> getMembers() {
 		return members;
 	}
-
+	/**
+	 * Returns the list of visas currently in the faction
+	 * @author ZettaX
+	 * @return
+	 */
+	
+	public ArrayList<Visa> getVisas() {
+		return visas;
+	}
+	
+	public void removeVisa(Visa visa) {
+		this.visas.remove(visa);
+	}
+	
+	public void addVisa(Visa visa) {
+		this.visas.add(visa);
+	}
+	
 	/**
 	 * Returns the faction's list of claims
 	 * 
@@ -225,6 +312,12 @@ public class Faction implements Serializable {
 		}
 	}
 
+	/**
+	 * Deserializes the faction from the specified *.fbin.
+	 * Needs a nullchecl
+	 * @param fileName the path to the file on disk
+	 * @return faction object or null
+	 */
 	public static Faction deserialize(String fileName) {
 		Faction faction = null;
 
@@ -288,8 +381,6 @@ public class Faction implements Serializable {
 			names.add( Commands.getPlayerNameFromUuid(uuids.get(i)));
 		}
 		
-		
-		
 		return names;
 	}
 	
@@ -309,7 +400,6 @@ public class Faction implements Serializable {
 		}
 		
 		return result;
-		
 	}
 	
 	/**
@@ -343,7 +433,6 @@ public class Faction implements Serializable {
 		
 		}
 		return null;
-		
 	}
 	
 	/**
@@ -361,8 +450,76 @@ public class Faction implements Serializable {
 		
 		return false;
 	}
-	
-	
-	
 
+	public Group getDefaultGroup() {
+		return defaultGroup;
+	}
+
+	public void setDefaultGroup(Group defaultGroup) {
+		this.defaultGroup = defaultGroup;
+	}
+
+	/**
+	 * gets the group that the player belongs to inside a given faction
+	 * @param fac the faction that the player is in
+	 * @param uniqueId 
+	 * @return
+	 */
+	public static Group getGroupPlayerIsIn(Faction fac, UUID uniqueId) {
+		Group result = null;
+		for (Group group : fac.getGroups()) {
+			for(UUID uuid : group.getMembers()) {
+				if (uuid.equals(uniqueId)) {
+					result = group;
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Does this group exist in the faction?
+	 * @param name name of the group
+	 * @param fac faction in mind
+	 * @return whether or not the group in-fact exists
+	 */
+	public static boolean doesGroupExist(String name, Faction fac) {
+		
+		for ( Group g : fac.getGroups()) {
+			if (g.getName().equalsIgnoreCase(name)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Retrieves the matching group
+	 * Requires nullcheck
+	 * @param name name of the group
+	 * @param fac faction that the group is in
+	 * @return the group object (or null)
+	 */
+	public static Group getGroupFromFactionByName(String name, Faction fac) {
+		
+		for ( Group g : fac.getGroups()) {
+			if (g.getName().equalsIgnoreCase(name)) {
+				return g;
+			}
+		}
+		return null;
+	}
+
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

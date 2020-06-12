@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.io.File;
 import java.util.ArrayList;
-
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
