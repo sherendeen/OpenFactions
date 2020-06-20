@@ -48,6 +48,7 @@ public class Faction implements Serializable {
 	private ArrayList<UUID> members = new ArrayList<UUID>();
 	
 	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
+
 	/** 
 	 * List of land claims made by this faction.
 	 * Encapsulates chunk coordinates, string descriptors, and 
@@ -95,8 +96,8 @@ public class Faction implements Serializable {
 		this.name = name;
 		this.members.add(personWhoCreatedTheFaction);
 		
-		Group adminGroup = Group.createAdminGroup();
-		Group commons = Group.createCommonGroup();
+		Group adminGroup = Helper.createAdminGroup();
+		Group commons = Helper.createCommonGroup();
 		System.out.println("Adding user to new faction into admin group");
 		adminGroup.addMember(personWhoCreatedTheFaction);
 		this.groups.add(adminGroup);
@@ -157,11 +158,11 @@ public class Faction implements Serializable {
 	 * @param type Enum relationshipTypes which currently has 6 values, ALLY, NEUTRAL, ENEMY, TRUCE, VASSAL, LORD
 	 */
 	public void setRelationshipByFactionName(String faction1Name, String faction2Name, relationshipTypes type) {
-		if(Faction.getFactionByFactionName(faction1Name) == null || Faction.getFactionByFactionName(faction2Name) == null) {
+		if(Helper.getFactionByFactionName(faction1Name) == null || Helper.getFactionByFactionName(faction2Name) == null) {
 			return;
 		}
-		Faction.getFactionByFactionName(faction1Name).relationships.put(faction2Name, type);
-		Faction.getFactionByFactionName(faction2Name).relationships.put(faction1Name, type);
+		Helper.getFactionByFactionName(faction1Name).relationships.put(faction2Name, type);
+		Helper.getFactionByFactionName(faction2Name).relationships.put(faction1Name, type);
 	}
 
 	/**
@@ -176,11 +177,11 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + returnListOfNames(getMembers()) + ", claimList: {"
-				+ getArrayListOfCoordinates(this.claimList) + "}, groups: " + getListOfGroupNames(groups) + ", default group upon joining: "+this.defaultGroup.getName();
+		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + Helper.returnListOfNames(this.members) + ", claimList: {"
+				+ Helper.getArrayListOfCoordinates(this.claimList) + "}, groups: " + getListOfGroupNames(groups) + ", default group upon joining: "+this.defaultGroup.getName();
 	}
 
-	private ArrayList<String> getListOfGroupNames(ArrayList<Group> groups) {
+	public ArrayList<String> getListOfGroupNames(ArrayList<Group> groups) {
 		ArrayList<String> results = new ArrayList<String>();
 		
 		for ( Group group : groups) {
@@ -188,26 +189,6 @@ public class Faction implements Serializable {
 		}
 		
 		return results;
-	}
-
-	public static String[] getArrayOfCoordinates(ArrayList<LandClaim> claims) {
-		
-		String[] array = new String[claims.size()];
-		
-		for ( int i = 0 ; i < array.length; i++) {
-			array[i] =  (i==0) ? "[" : ",["+ claims.get(i).getChunkX() + ", " + claims.get(i).getChunkZ()+"]";
-		}
-		
-		return array;
-	}
-	
-	public static ArrayList<String> getArrayListOfCoordinates(ArrayList<LandClaim> claims) {
-		ArrayList<String> coords = new ArrayList<String>();
-		for ( LandClaim lc : claims) {
-			String result = (lc.getClaimDescriptor().isEmpty()) ? "] " : "] - ``"+ lc.getClaimDescriptor() +"`` ";
-			coords.add(" ["+lc.getChunkX() + ", " +lc.getChunkZ() + result);
-		}
-		return coords;
 	}
 
 	/**
@@ -340,115 +321,14 @@ public class Faction implements Serializable {
 
 		return faction;
 	}
-	/**
-	 * finds a uuid in a haystack of factions
-	 * @param factionsList 
-	 * @param uuid unique identifier of a faction
-	 * @return
-	 */
-	public static int getFactionFromUUID(ArrayList<Faction> factionsList, UUID uuid) {
-		for (int i = 0; i < factionsList.size(); i++) {
-			if (factionsList.get(i).getSerialUUID() == uuid) {
-				return i;
-			}
-		}
-		return -1;
-	}
 	
-	/**
-	 * Returns the faction object that contains a specified member by UUID\
-	 * Needs a nullcheck
-	 * @param playerUUID
-	 * @return faction object containing member uuid
-	 */
-	public static Faction returnFactionThatPlayerIsIn(UUID playerUUID) {
-		
-		for ( Faction fac : CustomNations.factions ) {
-			for (UUID member : fac.getMembers()) {
-				if (member.equals(playerUUID)) {
-					return fac;
-				}
-			}
-		}
-		
-		return null;
-	}
 	
-	public static ArrayList<String> returnListOfNames(ArrayList<UUID> uuids) {
-		ArrayList<String> names = new ArrayList<String>();
-		
-		for ( int i = 0 ; i < uuids.size(); i++) {
-			names.add( Commands.getPlayerNameFromUuid(uuids.get(i)));
-		}
-		
-		return names;
+	public HashMap<String, relationshipTypes> getRelationships() {
+		return relationships;
 	}
-	
-	/**
-	 * 
-	 * @param player name display string
-	 * @return returns true if the player is in a faction. Returns false if not.
-	 */
-	public static boolean isPlayerInAnyFaction(String name) {
-		
-		UUID uuid = Commands.getUuidFromPlayerName(name);
-		
-		boolean result = false;
-		
-		for (Faction fac : CustomNations.factions) {
-			result = isPlayerInSpecifiedFaction(uuid, fac);
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * 
-	 * @param uuid player UUID
-	 * @param faction faction object
-	 * @return whether or not the specified uuid is in the faction
-	 */
-	public static boolean isPlayerInSpecifiedFaction(UUID uuid, Faction faction) {
-		if (faction != null) {
-			for (int i = 0; i < faction.getMembers().size(); i++ ) {
-				if (faction.getMembers().get(i).equals(uuid)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-	/**
-	 * Retrieves a faction object representing a given faction
-	 * after a valid name is specified. Requires a null check
-	 * @param name
-	 * @return faction object or NULL
-	 */
-	public static Faction getFactionByFactionName(String name) {
-		for ( Faction faction1 : CustomNations.factions) {
-			if (faction1.getName().equalsIgnoreCase(name)) {
-				return faction1;
-			}
-		
-		}
-		return null;
-	}
-	
-	/**
-	 * Returns true if a faction exists, returns false if it does not
-	 * @param name faction name
-	 * @return boolean value as to whether the faction already exists
-	 */
-	public static boolean doesFactionExist(String name) {
-		
-		for (Faction fac : CustomNations.factions) {
-			if (fac.getName().equalsIgnoreCase(name)) {
-				return true;
-			}
-		}
-		
-		return false;
+
+	public void setRelationships(HashMap<String, relationshipTypes> relationships) {
+		this.relationships = relationships;
 	}
 
 	public Group getDefaultGroup() {
@@ -457,58 +337,6 @@ public class Faction implements Serializable {
 
 	public void setDefaultGroup(Group defaultGroup) {
 		this.defaultGroup = defaultGroup;
-	}
-
-	/**
-	 * gets the group that the player belongs to inside a given faction
-	 * @param fac the faction that the player is in
-	 * @param uniqueId 
-	 * @return
-	 */
-	public static Group getGroupPlayerIsIn(Faction fac, UUID uniqueId) {
-		Group result = null;
-		for (Group group : fac.getGroups()) {
-			for(UUID uuid : group.getMembers()) {
-				if (uuid.equals(uniqueId)) {
-					result = group;
-				}
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Does this group exist in the faction?
-	 * @param name name of the group
-	 * @param fac faction in mind
-	 * @return whether or not the group in-fact exists
-	 */
-	public static boolean doesGroupExist(String name, Faction fac) {
-		
-		for ( Group g : fac.getGroups()) {
-			if (g.getName().equalsIgnoreCase(name)) {
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Retrieves the matching group
-	 * Requires nullcheck
-	 * @param name name of the group
-	 * @param fac faction that the group is in
-	 * @return the group object (or null)
-	 */
-	public static Group getGroupFromFactionByName(String name, Faction fac) {
-		
-		for ( Group g : fac.getGroups()) {
-			if (g.getName().equalsIgnoreCase(name)) {
-				return g;
-			}
-		}
-		return null;
 	}
 
 	public String getDesc() {
