@@ -224,6 +224,11 @@ public class Helper {
      * @return whether the faction exists or not
      */
     public static boolean doesFactionExist(String name) {
+    	
+    	if ( CustomNations.factions.size() < 1) {
+    		return false;
+    	}
+    	
         for (Faction fac : CustomNations.factions) {
             if (fac.getName().equalsIgnoreCase(name)) {
                 return true;

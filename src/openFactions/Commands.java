@@ -396,25 +396,23 @@ public class Commands implements CommandExecutor{
 	        sender.sendMessage(String.valueOf(playerName) + " is a member of the faction called " + fac.getName() + ".");
 	        
 	        sender.sendMessage("They are in the group called " + Helper.getGroupPlayerIsIn(fac, uuid).getName() + ".");
-	        
-	        ArrayList<Visa> visasThatThePlayerHas = Helper.getVisasOfPlayer(uuid);
-	        
-	        if (visasThatThePlayerHas.size() > 0) {
-	            sender.sendMessage("- Visas -");
-	            for (Visa visa : visasThatThePlayerHas) {
-	                String[] fields = Helper.getVisaReport(visa);
-	                for (int i = 0; i < fields.length; ++i) {
-	                    sender.sendMessage(fields[i]);
-	                }
-	            }
-	            sender.sendMessage("");
-	        }
-	        return true;
-	        
         } 
         
+        ArrayList<Visa> visasThatThePlayerHas = Helper.getVisasOfPlayer(uuid);
+        
+        if (visasThatThePlayerHas.size() > 0) {
+            sender.sendMessage("- Visas -");
+            for (Visa visa : visasThatThePlayerHas) {
+                String[] fields = Helper.getVisaReport(visa);
+                for (int i = 0; i < fields.length; ++i) {
+                    sender.sendMessage(fields[i]);
+                }
+            }
+            sender.sendMessage("");
+        }
+        
         sender.sendMessage(extraArguments[1] + " is not in a faction.");
-        return false;
+        return true;
         
 		
 	}
