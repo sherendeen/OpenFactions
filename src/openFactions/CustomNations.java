@@ -29,7 +29,7 @@ public class CustomNations extends JavaPlugin{
 	
 	public static ArrayList<Faction> factions = new ArrayList<Faction>(); 
 	
-	
+	private EventListener ev;
 	
 	private World w ;
 	public World getWorld() {
@@ -75,6 +75,8 @@ public class CustomNations extends JavaPlugin{
 			}
 		}
 		System.out.println("Done with chunks.");
+		System.out.println("Starting event listener...");
+		this.ev = new EventListener(this);
 			
 	}
 	

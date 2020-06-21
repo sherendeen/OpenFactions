@@ -207,12 +207,12 @@ public class Commands implements CommandExecutor{
 		
 		if(visaHolder != null) {
 			
-			if(Faction.isPlayerInAnyFaction(player.getName()) == false) {
+			if(Helper.isPlayerInAnyFaction(player.getName()) == false) {
 				sender.sendMessage("You are not in a faction!");
 				return true;
 			}
 			
-			Faction senderFaction = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction senderFaction = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 			ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
 			
 			//Check to see if the player already has a visa.
@@ -312,12 +312,12 @@ public class Commands implements CommandExecutor{
 			return true;
 		}
 		
-		if(Faction.isPlayerInAnyFaction(player.getName()) == false) {
+		if(Helper.isPlayerInAnyFaction(player.getName()) == false) {
 			sender.sendMessage("You are not in a faction!");
 			return true;
 		}
 		
-		Faction senderFaction = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction senderFaction = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
 				
 		if(visaHolder != null) {
@@ -358,7 +358,7 @@ public class Commands implements CommandExecutor{
 			sender.sendMessage("You must specify a real player!");
 			return true;
 		}
-		Faction senderFaction = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction senderFaction = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
 				
 		if(visaHolder != null) {
@@ -379,25 +379,42 @@ public class Commands implements CommandExecutor{
 	}
 
 	private boolean showWhoIsReport(CommandSender sender, String[] extraArguments) {
-		UUID uuid = getUuidFromPlayerName(extraArguments[1]);
+		UUID uuid = Helper.getUuidFromPlayerName(extraArguments[1]);
+        System.out.println("OFDB: whoisReport: arg0:[" + extraArguments[0] + "], arg1:[" + extraArguments[1] + "]");
+        if (uuid == null) {
+            sender.sendMessage(String.valueOf(extraArguments[1]) + " does not exist.");
+            return false;
+        }
+        
+        if ( Helper.isPlayerInAnyFaction(extraArguments[1])) {
+        	
+	        Faction fac = Helper.returnFactionThatPlayerIsIn(uuid);
+	        String playerName = Helper.getPlayerNameFromUuid(uuid);
+	        
+	        sender.sendMessage("--- Who Is " + playerName + "? Report ---");
+	        
+	        sender.sendMessage(String.valueOf(playerName) + " is a member of the faction called " + fac.getName() + ".");
+	        
+	        sender.sendMessage("They are in the group called " + Helper.getGroupPlayerIsIn(fac, uuid).getName() + ".");
+        } 
+        
+        ArrayList<Visa> visasThatThePlayerHas = Helper.getVisasOfPlayer(uuid);
+        
+        if (visasThatThePlayerHas.size() > 0) {
+            sender.sendMessage("- Visas -");
+            for (Visa visa : visasThatThePlayerHas) {
+                String[] fields = Helper.getVisaReport(visa);
+                for (int i = 0; i < fields.length; ++i) {
+                    sender.sendMessage(fields[i]);
+                }
+            }
+            sender.sendMessage("");
+        }
+        
+        sender.sendMessage(extraArguments[1] + " is not in a faction.");
+        return true;
+        
 		
-		if (uuid != null) {
-			
-			if(Faction.doesFactionExist(extraArguments[1])) {
-				Faction fac1 = Faction.returnFactionThatPlayerIsIn(uuid);
-				//TODO: improve output
-				sender.sendMessage(fac1.toString());
-				return true;
-			} else {
-				sender.sendMessage(extraArguments[1] + " is not in a faction.");
-				return true;
-			}
-			
-			
-		} else {
-			sender.sendMessage(extraArguments[1] + " does not exist.");
-		}
-		return false;
 	}
 
 
@@ -405,7 +422,7 @@ public class Commands implements CommandExecutor{
 		
 		sender.sendMessage(extraArguments[1]);
 		
-		if (!Faction.doesFactionExist(extraArguments[1])) {
+		if (!Helper.doesFactionExist(extraArguments[1])) {
 			return false;
 		}
 		
@@ -423,12 +440,12 @@ public class Commands implements CommandExecutor{
 	private boolean showRelations(CommandSender sender, String[] extraArguments) {
 		//TODO: don't require all caps for input. Suggestion: use toLower
 		
-		if(Faction.getFactionByFactionName(extraArguments[1]) == null) {
+		if(Helper.getFactionByFactionName(extraArguments[1]) == null) {
 			sender.sendMessage(extraArguments[1] + " is not a real faction!");
 			return false;
 		}
 		
-		Faction fac2 = Faction.getFactionByFactionName(extraArguments[1]);
+		Faction fac2 = Helper.getFactionByFactionName(extraArguments[1]);
 		sender.sendMessage(Faction.getRelationshipString(fac2));
 		
 		return true;
@@ -443,21 +460,21 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		
-		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
-		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( Group.doesGroupHavePermission(Can.ASSIGN_GROUPS, group )== false ) {
+		if ( Helper.doesGroupHavePermission(Can.ASSIGN_GROUPS, group )== false ) {
 			sender.sendMessage("You aren't allowed to assign people to a group.");
 			return false;
 		} 
 		
-		Group groupToEdit = Faction.getGroupFromFactionByName(
+		Group groupToEdit = Helper.getGroupFromFactionByName(
 				extraArguments[1], fac);
 		
 		UUID uuid = Commands.getUuidFromPlayerName(extraArguments[2]);
@@ -492,16 +509,16 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		
-		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
-		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( Group.doesGroupHavePermission(Can.CHANGE_FACTION_DESC, group )== false ) {
+		if ( Helper.doesGroupHavePermission(Can.CHANGE_FACTION_DESC, group )== false ) {
 			sender.sendMessage("You aren't allowed to edit this particular group.");
 			return false;
 		} 
@@ -524,16 +541,16 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		
-		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
-		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( Group.doesGroupHavePermission(Can.CHANGE_FACTION_NAME, group )== false ) {
+		if ( Helper.doesGroupHavePermission(Can.CHANGE_FACTION_NAME, group )== false ) {
 			sender.sendMessage("You aren't allowed to edit this particular group.");
 			return false;
 		} 
@@ -556,23 +573,23 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		
-		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
-		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( Group.doesGroupHavePermission(Can.EDIT_GROUPS, group )== false ) {
+		if ( Helper.doesGroupHavePermission(Can.EDIT_GROUPS, group )== false ) {
 			sender.sendMessage("You aren't allowed to edit this particular group.");
 			return false;
 		} 
 		
-		Group groupToEdit = Faction.getGroupFromFactionByName(extraArguments[1], fac);
+		Group groupToEdit = Helper.getGroupFromFactionByName(extraArguments[1], fac);
 		
-		if (!Group.doesStringMatchAValidPermission(extraArguments[2])) {
+		if (!Helper.doesStringMatchAValidPermission(extraArguments[2])) {
 			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
 			return false;
 		}
@@ -604,23 +621,23 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		
-		if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
-		Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
-		if ( !Group.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
+		if ( !Helper.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
 			sender.sendMessage("You aren't allowed to edit this particular group.");
 			return false;
 		} 
 		
-		Group groupToEdit = Faction.getGroupFromFactionByName(extraArguments[1], fac);
+		Group groupToEdit = Helper.getGroupFromFactionByName(extraArguments[1], fac);
 		
-		if (!Group.doesStringMatchAValidPermission(extraArguments[2])) {
+		if (!Helper.doesStringMatchAValidPermission(extraArguments[2])) {
 			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
 			return false;
 		}
@@ -656,7 +673,7 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		if (!Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+		if (!Helper.isPlayerInAnyFaction(player.getDisplayName())) {
 			sender.sendMessage("You are not in a faction.");
 			return false;
 		} 
@@ -683,17 +700,17 @@ public class Commands implements CommandExecutor{
 //			return false;
 //		}
 		
-		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			
-			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 			
-			if (Faction.doesGroupExist( extraArguments[1], fac) == false) {
+			if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 				sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
 				return false;
 			}
 			
 			sender.sendMessage("--- Group Information ---");
-			sender.sendMessage( Faction.getGroupFromFactionByName(extraArguments[1], fac).toString() );
+			sender.sendMessage( Helper.getGroupFromFactionByName(extraArguments[1], fac).toString() );
 		}
 		
 		return true;
@@ -717,18 +734,18 @@ public class Commands implements CommandExecutor{
 		
 		
 		//determine if player is in a faction
-		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
+		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			
-			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 			
-			if (Faction.doesGroupExist( extraArguments[1], fac)) {
+			if (Helper.doesGroupExist( extraArguments[1], fac)) {
 				sender.sendMessage("This group of " + extraArguments[1] + " already exists!" );
 				return false;
 			}
 			
-			Group group = Faction.getGroupPlayerIsIn(fac, player.getUniqueId());
+			Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 			
-			if (Group.doesGroupHavePermission(Can.MAKE_OR_REMOVE_GROUPS, group)) {
+			if (Helper.doesGroupHavePermission(Can.MAKE_OR_REMOVE_GROUPS, group)) {
 				//inherit from the group you are in but have a different name
 				
 				ArrayList<Can> perms = new ArrayList<Can>();
@@ -781,13 +798,13 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		if(Faction.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
+		if(Helper.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
 			sender.sendMessage("You are not in a faction!");
 			return false; 
 		}
 		
-		Faction faction1 = Faction.returnFactionThatPlayerIsIn(player.getUniqueId()); 
-		if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Faction.getFactionByFactionName(faction1.getName()) == null) {
+		Faction faction1 = Helper.returnFactionThatPlayerIsIn(player.getUniqueId()); 
+		if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Helper.getFactionByFactionName(faction1.getName()) == null) {
 			sender.sendMessage("That faction name is invalid!");
 			return false;
 		}
@@ -810,7 +827,7 @@ public class Commands implements CommandExecutor{
 		
 		//we'll assume that we don't need
 		//an invitation
-		if (Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+		if (Helper.isPlayerInAnyFaction(player.getDisplayName())) {
 			sender.sendMessage("You cannot join a faction as you are already in one!");
 			return false;
 		} else {
@@ -842,7 +859,7 @@ public class Commands implements CommandExecutor{
 		if (player == null ) {
 			sender.sendMessage("Faction creation as the console is not allowed.");
 			return false;
-		} else if(Faction.isPlayerInAnyFaction(player.getDisplayName())) {
+		} else if(Helper.isPlayerInAnyFaction(player.getDisplayName())) {
 			sender.sendMessage("You are already in a faction."
 					+ " You must first leave your faction "
 					+ "in order to make a new one.");
@@ -850,7 +867,7 @@ public class Commands implements CommandExecutor{
 		} else if (extraArguments.length > 2) {
 			sender.sendMessage("You may not have spaces in your faction name.");
 			return false;
-		} else if (Faction.doesFactionExist(extraArguments[1])) {
+		} else if (Helper.doesFactionExist(extraArguments[1])) {
 			sender.sendMessage("You may not create a faction with name " 
 					+ extraArguments[1] + " because it already exists.");
 			return false;
@@ -871,7 +888,7 @@ public class Commands implements CommandExecutor{
 	private boolean leaveFaction(CommandSender sender) {
 		Player pl = (Player) sender;
 		UUID plUuid = pl.getUniqueId();
-		Faction fac = Faction.returnFactionThatPlayerIsIn(plUuid);
+		Faction fac = Helper.returnFactionThatPlayerIsIn(plUuid);
 		
 		if (fac != null) {
 			fac.removeMember(plUuid);
@@ -903,14 +920,14 @@ public class Commands implements CommandExecutor{
 		
 		Chunk chunk = player.getLocation().getChunk();
 		
-		if ( LandClaim.isSpecifiedChunkInsideAnyFaction( chunk)) {
+		if ( Helper.isSpecifiedChunkInsideAnyFaction( chunk)) {
 			
-			ArrayList<Faction> facs = LandClaim.returnFactionObjectsWhereChunkIsFoundIn(chunk);
+			ArrayList<Faction> facs = Helper.returnFactionObjectsWhereChunkIsFoundIn(chunk);
 			
 			sender.sendMessage("--- Land claim ownership ---");
 			for(Faction fac : facs) {
 				
-				LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
+				LandClaim lc = Helper.returnLandClaimContainingSpecifiedChunk(chunk);
 				
 				sender.sendMessage("Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
 			}
@@ -935,8 +952,8 @@ public class Commands implements CommandExecutor{
 			player = (Player) sender;
 		}
 		//if player is in a faction
-		if ( Faction.isPlayerInAnyFaction(player.getDisplayName()) ) {
-			Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
+			Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 			
 			for (LandClaim lc : fac.getClaims()) {
 				fac.removeClaim(lc);
@@ -961,7 +978,7 @@ public class Commands implements CommandExecutor{
 		}
 		
 		//get players faction
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		if (fac == null) {
 			sender.sendMessage("You can't do this because you are not in a faction.");
 			return false;
@@ -971,7 +988,7 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			LandClaim lc = LandClaim.returnLandClaimContainingSpecifiedChunk(chunk);
+			LandClaim lc = Helper.returnLandClaimContainingSpecifiedChunk(chunk);
 			
 			if(lc == null) {
 				return false;
@@ -989,7 +1006,7 @@ public class Commands implements CommandExecutor{
 				}
 			}
 			
-			if ( LandClaim.isSpecifiedLandClaimInsideAnyFaction(lc)) {
+			if ( Helper.isSpecifiedLandClaimInsideAnyFaction(lc)) {
 				//TODO: account for diplomacy
 				sender.sendMessage("This territory is owned by a different faction.");
 				return false;
@@ -1015,7 +1032,7 @@ public class Commands implements CommandExecutor{
 			player = (Player) sender;
 		}
 		
-		Faction fac = Faction.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
 		if (fac == null) {
 			sender.sendMessage("Land claim failed! You are not in a faction.");
 			return false;
@@ -1026,7 +1043,7 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			if ( LandClaim.isSpecifiedChunkInsideAnyFaction(chunk)  ) {
+			if ( Helper.isSpecifiedChunkInsideAnyFaction(chunk)  ) {
 				//TODO: account for diplomacy
 				//TODO: account for contest claiming
 				sender.sendMessage("This territory is already claimed.");

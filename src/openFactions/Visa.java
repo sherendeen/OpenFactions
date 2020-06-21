@@ -41,6 +41,7 @@ public class Visa implements Serializable{
 		this.setIssuer(issuer);
 		this.setVisaHolder(uuid);
 	}
+	
 	/**
 	 * Visa without an expiration date. You will have to manually revoke this one.
 	 * @param issueDate
