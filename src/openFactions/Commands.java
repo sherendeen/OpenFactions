@@ -1,4 +1,4 @@
-//Copyright 2018-2020
+//Copyright 2018, 2019, 2020, 2021
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
 //the Free Software Foundation, either version 3 of the License, or
@@ -11,48 +11,28 @@
 
 package openFactions;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;  
-import java.util.Date;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import openFactions.CustomNations;
 
-enum Cmd {
-	ADDPERMISSION,
-	AP,/**ADDPERMISSION ALIAS*/
-	ASSIGN,
-	CLAIM,
-	CREATE,
-	CREATEGROUP,
-	CG,/**alias for CreateGroup*/
-	JOIN,
-	LIST,
-	LEAVE,
-	OWNS,
-	REMOVEPERMISSION,
-	RP,/**RemovePermission Alias*/
-	SETGROUP,
-	SETPERMISSION,
-	SP,/** alias for SetPermission */
-	SETRELATION,
-	SHOW,
-	SHOWGROUP,
-	SHOWRELATIONS,
-	UNCLAIM,
-	UNCLAIMALL,
-	WHOIS
-}
-
+import openFactions.objects.Faction;
+import openFactions.objects.Group;
+import openFactions.objects.LandClaim;
+import openFactions.objects.Visa;
+import openFactions.objects.enums.Can;
+import openFactions.objects.enums.Cmd;
+import openFactions.objects.enums.RelationshipType;
+import openFactions.util.Helper;
 
 public class Commands implements CommandExecutor{
 	
@@ -810,7 +790,7 @@ public class Commands implements CommandExecutor{
 		}
 		
 		String faction1Name = faction1.getName(); 
-		faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], relationshipTypes.valueOf(extraArguments[2]));
+		faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], RelationshipType.valueOf(extraArguments[2]));
 		Bukkit.broadcastMessage(faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
 		
 		return true;

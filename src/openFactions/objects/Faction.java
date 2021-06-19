@@ -9,7 +9,7 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-package openFactions;
+package openFactions.objects;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,20 +23,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.UUID;
 
-/**
- * 
- * @author Seth G. R. Herendeen [inivican]
- *
- */
-
-enum relationshipTypes {
-	NEUTRAL, 
-	ALLY,
-	ENEMY,
-	TRUCE,
-	LORD,
-	VASSAL	
-}
+import openFactions.objects.enums.RelationshipType;
+import openFactions.util.Helper;
 
 public class Faction implements Serializable {
 
@@ -47,7 +35,7 @@ public class Faction implements Serializable {
 	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
 	
-	private HashMap<String, relationshipTypes> relationships = new HashMap<String, relationshipTypes>(); 
+	private HashMap<String, RelationshipType> relationships = new HashMap<String, RelationshipType>(); 
 
 	/** 
 	 * List of land claims made by this faction.
@@ -148,7 +136,7 @@ public class Faction implements Serializable {
 	public static String getRelationshipTypeString(Faction faction) {
 		return faction.relationships.get(faction.getName()).toString();
 	}
-	public static relationshipTypes getRelationshipType(Faction faction) {
+	public static RelationshipType getRelationshipType(Faction faction) {
 		return faction.relationships.get(faction.getName());
 	}
 	/**
@@ -157,7 +145,7 @@ public class Faction implements Serializable {
 	 * @param faction2Name The faction name of the faction being set a relationship to
 	 * @param type Enum relationshipTypes which currently has 6 values, ALLY, NEUTRAL, ENEMY, TRUCE, VASSAL, LORD
 	 */
-	public void setRelationshipByFactionName(String faction1Name, String faction2Name, relationshipTypes type) {
+	public void setRelationshipByFactionName(String faction1Name, String faction2Name, RelationshipType type) {
 		if(Helper.getFactionByFactionName(faction1Name) == null || Helper.getFactionByFactionName(faction2Name) == null) {
 			return;
 		}
@@ -323,11 +311,11 @@ public class Faction implements Serializable {
 	}
 	
 	
-	public HashMap<String, relationshipTypes> getRelationships() {
+	public HashMap<String, RelationshipType> getRelationships() {
 		return relationships;
 	}
 
-	public void setRelationships(HashMap<String, relationshipTypes> relationships) {
+	public void setRelationships(HashMap<String, RelationshipType> relationships) {
 		this.relationships = relationships;
 	}
 

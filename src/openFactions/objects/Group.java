@@ -1,7 +1,10 @@
-package openFactions;
+package openFactions.objects;
 
 import java.util.ArrayList;
 import java.util.UUID;
+
+import openFactions.objects.enums.Can;
+
 import java.io.Serializable;
 import java.time.Period;
 

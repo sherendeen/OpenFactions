@@ -1,4 +1,4 @@
-package openFactions;
+package openFactions.util;
 
 import java.time.Period;
 import java.util.ArrayList;
@@ -10,6 +10,14 @@ import org.bukkit.Chunk;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+
+import openFactions.CustomNations;
+import openFactions.objects.Faction;
+import openFactions.objects.Group;
+import openFactions.objects.LandClaim;
+import openFactions.objects.Visa;
+import openFactions.objects.enums.Can;
+import openFactions.objects.enums.RelationshipType;
 
 public class Helper {
 	public static boolean isSpecifiedLandClaimInsideAnyFaction(LandClaim lc) {
@@ -412,7 +420,7 @@ public class Helper {
         return faction.getRelationships().get(faction.getName()).toString();
     }
     
-    public static relationshipTypes getRelationshipType(Faction faction) {
+    public static RelationshipType getRelationshipType(Faction faction) {
         return faction.getRelationships().get(faction.getName());
     }
     

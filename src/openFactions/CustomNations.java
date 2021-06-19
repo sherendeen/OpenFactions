@@ -1,5 +1,5 @@
 /** 
-Copyright (C) 2018-2020 Seth Herendeen; Samuel Inciarte
+ Copyright (C) 2018-2020 Seth Herendeen; Samuel Inciarte
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,12 +13,16 @@ GNU General Public License for more details.
 package openFactions;
 **/
 package openFactions;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.io.File;
 import java.util.ArrayList;
+
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import openFactions.objects.Faction;
+import openFactions.objects.LandClaim;
 
 /**
  * 
