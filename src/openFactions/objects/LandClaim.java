@@ -8,13 +8,14 @@
 //but WITHOUT ANY WARRANTY; without even the implied warranty of
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
-package openFactions;
+package openFactions.objects;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 import org.bukkit.Chunk;
 import org.bukkit.World;
+
+import openFactions.CustomNations;
 
 public class LandClaim implements Serializable {
 

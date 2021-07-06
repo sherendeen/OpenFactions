@@ -12,7 +12,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 package openFactions;
 **/
-package openFactions;
+package openFactions.objects.enums;
 
 public enum Can {
 	ASSIGN_GROUPS,	
