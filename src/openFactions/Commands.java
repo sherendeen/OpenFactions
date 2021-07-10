@@ -16,10 +16,12 @@ import java.text.SimpleDateFormat;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,11 +30,14 @@ import org.bukkit.entity.Player;
 import openFactions.objects.Faction;
 import openFactions.objects.Group;
 import openFactions.objects.LandClaim;
+import openFactions.objects.PlayerInfo;
 import openFactions.objects.Visa;
+import openFactions.objects.Warp;
 import openFactions.objects.enums.Can;
 import openFactions.objects.enums.Cmd;
 import openFactions.objects.enums.RelationshipType;
 import openFactions.util.Helper;
+import openFactions.util.constants.MsgPrefix;
 
 public class Commands implements CommandExecutor{
 	
@@ -41,126 +46,357 @@ public class Commands implements CommandExecutor{
 		this.plugin = plugin;
 	}
 	
+	// for teleportation
+	private HashMap<String, Long> coolDowns = new HashMap<String, Long>();
+	private final int COOLDOWN_TIME = 90;// TODO: Make Configurable
+	
 	SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] extraArguments) {
+		
 		Player player ;
 		if ( !( sender instanceof Player )) {
 			player = null;
 		} else {
 			player = (Player) sender;
 		}
+		
+		if (!command.getName().equalsIgnoreCase("of")) {
+			return false;
+		}
+		
+		if (extraArguments.length < 1) {
+			return false;
+		}
+	
 		dateFormat.setLenient(false);
-		
-		
-		
-		if(command.getName().equalsIgnoreCase("of") && extraArguments.length > 0) {
+		// check subcommands
+		switch (extraArguments[0].toLowerCase()) {
+		case "addpermission":
+		case "ap":
 			
-			switch (extraArguments[0].toLowerCase()) {
-			case "addpermission":
-			case "ap":
-				
-				return addPermissionHandler(sender, command, extraArguments);
-			case "assign":
-				
-				return assignToGroup(sender, extraArguments);
-				
-			case "claim":
-				//Keeping things neat by putting the bulk of the code outside this case block
-				return claimLand(sender,command,extraArguments);
-				
-			case "create":
-				
-				return createFaction(sender, extraArguments);
-				
-			case "creategroup":
-			case "cg":
-				return createGroup(sender, extraArguments);
-			case "desc":
-				return changeFactionDescription(sender,extraArguments);
-				
-				
-			case "join":
-				
-				return joinFaction(sender, extraArguments);
-				
-			case "list":
-				
-				return listFactions(sender);
-				
-			case "leave":
-				return leaveFaction(sender);
-			case "name":
-				
-				return changeFactionName(sender,extraArguments);
-				
-				
-			case "removepermission":
-			case "rp":
-				
-				return removePermissionHandler(sender, command, extraArguments);
+			return addPermissionHandler(sender, command, extraArguments);
+		case "assign":
 			
-			case "owns":
-				
-				return returnWhoOwns(sender);
-				
-			case "unclaim":
-				
-				
-				return unclaimLand(sender,command,extraArguments);
-				
-			case "unclaimall":
-				
-				return unclaimAllLand(sender);
-				
-			case "whois":
-				
-				return showWhoIsReport(sender,extraArguments);
+			return assignToGroup(sender, extraArguments);
+			
+		case "claim":
+			//Keeping things neat by putting the bulk of the code outside this case block
+			return claimLand(sender,command,extraArguments);
+			
+		case "create":
+			
+			return createFaction(sender, extraArguments);
+			
+		case "creategroup":
+		case "cg":
+			return createGroup(sender, extraArguments);
+			
+		case "desc":
+			return changeFactionDescription(sender,extraArguments);
+			
+			
+		case "join":
+			
+			return joinFaction(sender, extraArguments);
+			
+		case "list":
+			
+			return listFactions(sender);
+			
+		case "leave":
+			return leaveFaction(sender);
+		case "name":
+			
+			return changeFactionName(sender,extraArguments);
+			
+			
+		case "removepermission":
+		case "rp":
+			
+			return removePermissionHandler(sender, command, extraArguments);
+		
+		case "owns":
+			
+			return returnWhoOwns(sender);
+			
+		case "unclaim":
+			
+			
+			return unclaimLand(sender,command,extraArguments);
+			
+		case "unclaimall":
+			
+			return unclaimAllLand(sender);
+			
+		case "whois":
+			
+			return showWhoIsReport(sender,extraArguments);
 
-			case "setpermission":
-			case "sp":
-				
-				return false;
-				
-			case "show":
-				return showFactionInformation(sender, extraArguments);
-			case "showgroup":
-				
-				return showGroup(sender, extraArguments);
-				
-			case "setrelation":
-				
-				return setRelation(sender,extraArguments); 
-				
-			case "showrelations":
-				
-				return showRelations(sender, extraArguments);
+		case "setpermission":
+		case "sp":
+			
+			return false;
+		case "info":
+			
+			return showInfo(sender);
+			
+		case "show":
+			return showFactionInformation(sender, extraArguments);
+			
+		case "showgroup":
+			
+			return showGroup(sender, extraArguments);
+			
+		case "setrelation":
+			
+			return setRelation(sender,extraArguments); 
+		case "setwarp":
+			
+			return setWarp(sender,extraArguments,player);
+			
+		case "showrelations":
+			
+			return showRelations(sender, extraArguments);
 
-			case "grantvisa":
-				
-				return grantVisa(sender, extraArguments);
-			case "revokevisa":
-				
-				return revokeVisa(sender, extraArguments);
-			case "checkvisa":
-				
-				return checkVisa(sender, extraArguments);
+		case "grantvisa":
+			
+			return grantVisa(sender, extraArguments);
+		case "revokevisa":
+			
+			return revokeVisa(sender, extraArguments);
+		case "checkvisa":
+			
+			return checkVisa(sender, extraArguments);
+		case "warp":
+			
+			return teleportToWarp(sender,extraArguments,player);
+			
+		case "vote":
+			//TODO: setup vote command
+			break;
+			
+		case "propose":
+			//TODO: setup propose resolution command
+			break;
 
-			case "help":
-			default:
-				sender.sendMessage("--- OpenFactions Commands ---");
-				for (int i = 0; i <  Cmd.values().length; i++) {
-					sender.sendMessage(Cmd.values()[i].toString());
-				}
+		case "help":
+		default:
+			sender.sendMessage("--- OpenFactions Commands ---");
+			for (int i = 0; i <  Cmd.values().length; i++) {
+				sender.sendMessage(Cmd.values()[i].toString());
+			}
+			return true;
+		}
+		
+		sender.sendMessage(MsgPrefix.ERR + "Unspecified error in executing command.");
+		return false;
+	}
+	
+	private long getSecondsLeft(Player player) {
+		return ((coolDowns.get(player.getName())/1000) + COOLDOWN_TIME) - (System.currentTimeMillis() / 1000);
+	}
+	
+	private boolean teleportToWarp(CommandSender sender, String[] extraArguments, Player player) {
+		
+		if (player==null ) {
+			sender.sendMessage(MsgPrefix.ERR + "Console cannot set warps.");
+			return false;
+		}
+		
+		PlayerInfo pi = new PlayerInfo(player);
+		
+		if (!pi.isPlayerInAFaction() ) {
+			sender.sendMessage(MsgPrefix.ERR + "You cannot use faction warps when you are not in a faction.");
+			return false;
+		}
+		
+		if (!Helper.warpExists(extraArguments[1], pi.getPlayerFaction())) {
+			sender.sendMessage(MsgPrefix.ERR + "No such warp exists.");
+			return false;
+		}
+		Warp warp = Helper.getWarpByName(extraArguments[1], pi.getPlayerFaction());
+		
+		if ( !pi.getPlayerGroup().hasPermission(Can.USE_FACTION_WARP) && 
+				!warp.getAssociatedGroup().equals(pi.getPlayerGroup())) {
+			
+			sender.sendMessage(MsgPrefix.ERR + "Your group is not allowed to use faction warps.");
+			sender.sendMessage("Groups in your faction that can: " +
+					Helper.getGroupsByPermission(pi.getPlayerFaction(), Can.USE_FACTION_WARP));
+			return false;
+		}
+		
+		//
+		// initiate teleport
+		//
+		//
+		if (coolDowns.containsKey(player.getName())) {
+			
+			System.out.println(MsgPrefix.DEBUG +"cooldowns contains key");
+			
+			long secondsLeft = getSecondsLeft(player);
+			
+			if (secondsLeft > 0) {
+				sender.sendMessage(MsgPrefix.ERR +
+						"You cannot teleport right now. " + 
+				secondsLeft + " seconds left.");
 				return true;
 			}
 			
+			coolDowns.put(player.getName(), 
+					System.currentTimeMillis());
 		} else {
+			coolDowns.put(player.getName(), System.currentTimeMillis());
+		}
+		
+		player.teleport(new Location(
+				plugin.getServer().getWorld(
+						warp.getWorldName()), warp.getWarpX(), 
+				warp.getWarpY(), warp.getWarpZ()));
+		
+		
+		return true;
+	}
+
+	private boolean showInfo(CommandSender sender) {
+		Player player = (Player) sender;
+		PlayerInfo pi = new PlayerInfo(player);
+		sender.sendMessage(MsgPrefix.INFO + "--- Your Information---");
+		if (pi.isPlayerInAFaction()) {
+			sender.sendMessage("Your faction: " + pi.getPlayerFaction().getName());
+			sender.sendMessage("Faction description: " + pi.getPlayerFaction().getDesc());
+			
+			sender.sendMessage("All groups in your faction:");
+			for (int i = 0 ; i < pi.getPlayerFaction().getGroups().size(); i++) {
+				sender.sendMessage(i+1+"." + pi.getPlayerFaction().getGroups().get(i).getName());
+			}
+			
+		} else {
+			sender.sendMessage("Your faction: n/a.");
+			sender.sendMessage("Faction description: n/a");
+			sender.sendMessage("Your group: n/a.");
+			
+		}
+		// they should be in a group...
+		if (pi.isPlayerInAGroup()) {
+			sender.sendMessage("Your group/division: " + pi.getPlayerGroup().getName());
+//			sender.sendMessage("Your permissions: " 
+//					+ Helper.formatPermissionsArrayToString(pi.getPlayerGroup().getGroupPermissions()));
+		}
+		
+		
+		return true;
+	}
+
+	/**
+	 * Sets a new faction exclusive warp if possible
+	 * @param sender
+	 * @param extraArguments
+	 * @param player
+	 * @return
+	 */
+	private boolean setWarp(CommandSender sender, String[] extraArguments, Player player) {
+		
+		if (player==null ) {
+			sender.sendMessage(MsgPrefix.ERR + "Console cannot set warps.");
 			return false;
 		}
+		
+		PlayerInfo pi = new PlayerInfo(player);
+		
+		if (!pi.isPlayerInAFaction() || !pi.isPlayerInAGroup()) {
+			sender.sendMessage(MsgPrefix.ERR + "You cannot set faction warps when you are not in a faction or a faction group.");
+			return false;
+		}
+		
+		Faction playerFaction = pi.getPlayerFaction();
+		Group playerGroup = pi.getPlayerGroup();
+		
+		// if the player is not in a group that can set faction warps... 
+		if (!Helper.doesGroupHavePermission(Can.SET_FACTION_WARP, playerGroup)) {
+			sender.sendMessage(MsgPrefix.ERR + 
+					"Your faction does not allow your group ("+
+					playerGroup.getName()+") to create new faction warps.");
+			
+			sender.sendMessage(MsgPrefix.INFO + 
+					"Groups your faction allows to set faction warps: ");
+			
+			ArrayList<Group> groups = Helper.getGroupsByPermission(playerFaction,
+					Can.SET_FACTION_WARP);
+			// list groups that have this permission/ability
+			if (groups != null && groups.size() >= 1) {
+				for(int i = 0 ; i < groups.size(); i++) {
+					sender.sendMessage("" + i+1 + ". " + groups.get(i).getName());
+				}
+			} else {
+				// rare, highly unlikely, but it is theoretically possible
+				// for a faction to remove from all groups that permission
+				sender.sendMessage(MsgPrefix.OK + "No one, apparently. Is this supposed to happen?");
+			}
+			return false;
+		}
+		
+		// by this point the player should have permission
+		// first we'll check to see if there is a group specified
+		System.out.println("extraArguments[0]:" + extraArguments[0]);
+		// we need two arguments in order for this to work
+		if ((extraArguments[1] != null //extraArguments[0] ==== warpName
+				&& extraArguments[1] != "") && 
+				(extraArguments[2] != null && // === player group as string
+				extraArguments[2] != "")) {
+			
+			if ( Helper.doesGroupExist(extraArguments[1], playerFaction) ) {
+				
+				int x = player.getLocation().getBlockX();
+				int y = player.getLocation().getBlockY();
+				int z = player.getLocation().getBlockZ();
+				
+				Warp warp = new Warp(extraArguments[2],x, y, z, 
+						plugin.getWorld().getName(), 
+						Helper.getGroupFromFactionByName(extraArguments[1], 
+								playerFaction));
+				
+				playerFaction.addWarp(warp);
+				
+				sender.sendMessage(MsgPrefix.OK + "New warp `" +warp.getWarpName()+ 
+						"` created at ["+x+","+y+","+z+"] for group " +
+						Helper.getGroupFromFactionByName(extraArguments[1], 
+						playerFaction) + "." );
+				
+				return true;
+			} else {
+				sender.sendMessage(MsgPrefix.ERR + "Can't assign group specific warp because specified group does not exist.");
+				sender.sendMessage(MsgPrefix.INFO + "Try /of info to see a list of groups");
+				
+				return false;
+			}
+			
+		} 
+		//TODO: setup group inspecific warps 
+//		else if (extraArguments[0] != null //extraArguments[0] ==== warpName
+//				&& extraArguments[0] != "") {
+//			
+//			// non exclusive groups
+//			int x = player.getLocation().getBlockX();
+//			int y = player.getLocation().getBlockY();
+//			int z = player.getLocation().getBlockZ();
+//			
+//			Warp warp = new Warp(extraArguments[0],x, y, z, 
+//					plugin.getWorld().getName());
+//			
+//			playerFaction.addWarp(warp);
+//			
+//			sender.sendMessage(MsgPrefix.OK + "New warp `" +warp.getWarpName()+ 
+//					"` created at ["+x+","+y+","+z+"]." );
+//			
+//			return true;
+//		}
+		
+		
+		return false;
 	}
-	
+
 	private boolean grantVisa(CommandSender sender, String[] extraArguments) {
 		
 		UUID visaHolder = null;
@@ -192,7 +428,7 @@ public class Commands implements CommandExecutor{
 				return true;
 			}
 			
-			Faction senderFaction = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction senderFaction = Helper.getPlayerFaction(player.getUniqueId());
 			ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
 			
 			//Check to see if the player already has a visa.
@@ -297,7 +533,7 @@ public class Commands implements CommandExecutor{
 			return true;
 		}
 		
-		Faction senderFaction = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction senderFaction = Helper.getPlayerFaction(player.getUniqueId());
 		ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
 				
 		if(visaHolder != null) {
@@ -338,7 +574,7 @@ public class Commands implements CommandExecutor{
 			sender.sendMessage("You must specify a real player!");
 			return true;
 		}
-		Faction senderFaction = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction senderFaction = Helper.getPlayerFaction(player.getUniqueId());
 		ArrayList<Visa> senderFactionVisaList = senderFaction.getVisas();
 				
 		if(visaHolder != null) {
@@ -368,7 +604,7 @@ public class Commands implements CommandExecutor{
         
         if ( Helper.isPlayerInAnyFaction(extraArguments[1])) {
         	
-	        Faction fac = Helper.returnFactionThatPlayerIsIn(uuid);
+	        Faction fac = Helper.getPlayerFaction(uuid);
 	        String playerName = Helper.getPlayerNameFromUuid(uuid);
 	        
 	        sender.sendMessage("--- Who Is " + playerName + "? Report ---");
@@ -400,12 +636,17 @@ public class Commands implements CommandExecutor{
 
 	private boolean showFactionInformation(CommandSender sender, String[] extraArguments) {
 		
-		sender.sendMessage(extraArguments[1]);
+		Player player = (Player) sender;
+		
+		if (extraArguments == null) {
+			sender.sendMessage(Helper.getPlayerFaction(player.getUniqueId()).toString());
+			return true;
+		}
 		
 		if (!Helper.doesFactionExist(extraArguments[1])) {
 			return false;
 		}
-		
+		//TODO: make more elegant show faction report
 		for ( Faction faction1 : CustomNations.factions) {
 			//must be bugged
 			if (faction1.getName().equalsIgnoreCase(extraArguments[1])) {
@@ -440,7 +681,7 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		
 		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
@@ -482,34 +723,38 @@ public class Commands implements CommandExecutor{
 
 
 	private boolean changeFactionDescription(CommandSender sender, String[] extraArguments) {
-		
 		Player player = (Player) sender;
 		
-		if(!isValid(sender, extraArguments)) {
+		if (player==null ) {
+			sender.sendMessage(MsgPrefix.ERR + "Console cannot set warps.");
 			return false;
 		}
 		
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
-		
-		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
-			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
-			return false;
-		}
-		
+		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
+
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( Helper.doesGroupHavePermission(Can.CHANGE_FACTION_DESC, group )== false ) {
-			sender.sendMessage("You aren't allowed to edit this particular group.");
+			sender.sendMessage("You aren't allowed to change the faction description.");
 			return false;
-		} 
-		
-		if (extraArguments[2] != null) {
-		fac.setDesc(extraArguments[2]);
-		} else {
-			return false;
+		}  else {
+			
+			String newDescription = "";
+			
+			for ( int i = 0 ; i < 0; i ++) {
+				System.out.println(extraArguments[i]);
+				newDescription +=" "+ extraArguments[i];
+			}
+			
+			fac.setDesc(newDescription);
+			
+			sender.sendMessage(MsgPrefix.OK + "Faction description is now: ");
+			sender.sendMessage(newDescription);
+			
+			return true;
 		}
 		
-		return true;
+		
 	}
 
 
@@ -517,26 +762,32 @@ public class Commands implements CommandExecutor{
 		
 		Player player = (Player) sender;
 		
-		if(!isValid(sender, extraArguments)) {
+		if (player==null ) {
+			sender.sendMessage(MsgPrefix.ERR + "Console cannot set warps.");
 			return false;
 		}
 		
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		PlayerInfo pi = new PlayerInfo(player);
 		
-		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
-			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+		if (!pi.isPlayerInAFaction()) {
+			sender.sendMessage(MsgPrefix.ERR + "You cannot change faction description because you aren't in one.");
 			return false;
 		}
 		
+		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
+
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( Helper.doesGroupHavePermission(Can.CHANGE_FACTION_NAME, group )== false ) {
-			sender.sendMessage("You aren't allowed to edit this particular group.");
+			sender.sendMessage("You aren't allowed to change the faction name.");
 			return false;
 		} 
 		
-		if (extraArguments[2] != null) {
-		fac.setName(extraArguments[2]);
+		if (extraArguments[1] != null) {
+			sender.sendMessage(MsgPrefix.OK + 
+					"Faction name has been changed to `" 
+					+ extraArguments[1] + ".`");
+			fac.setName(extraArguments[1]);
 		} else {
 			return false;
 		}
@@ -553,7 +804,7 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		
 		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
@@ -601,7 +852,7 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		
 		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
@@ -682,7 +933,7 @@ public class Commands implements CommandExecutor{
 		
 		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			
-			Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 			
 			if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
 				sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
@@ -716,7 +967,7 @@ public class Commands implements CommandExecutor{
 		//determine if player is in a faction
 		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			
-			Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 			
 			if (Helper.doesGroupExist( extraArguments[1], fac)) {
 				sender.sendMessage("This group of " + extraArguments[1] + " already exists!" );
@@ -778,12 +1029,12 @@ public class Commands implements CommandExecutor{
 			return false;
 		}
 		
-		if(Helper.returnFactionThatPlayerIsIn(player.getUniqueId()) == null) {
+		if(Helper.getPlayerFaction(player.getUniqueId()) == null) {
 			sender.sendMessage("You are not in a faction!");
 			return false; 
 		}
 		
-		Faction faction1 = Helper.returnFactionThatPlayerIsIn(player.getUniqueId()); 
+		Faction faction1 = Helper.getPlayerFaction(player.getUniqueId()); 
 		if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Helper.getFactionByFactionName(faction1.getName()) == null) {
 			sender.sendMessage("That faction name is invalid!");
 			return false;
@@ -868,7 +1119,7 @@ public class Commands implements CommandExecutor{
 	private boolean leaveFaction(CommandSender sender) {
 		Player pl = (Player) sender;
 		UUID plUuid = pl.getUniqueId();
-		Faction fac = Helper.returnFactionThatPlayerIsIn(plUuid);
+		Faction fac = Helper.getPlayerFaction(plUuid);
 		
 		if (fac != null) {
 			fac.removeMember(plUuid);
@@ -933,7 +1184,7 @@ public class Commands implements CommandExecutor{
 		}
 		//if player is in a faction
 		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
-			Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+			Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 			
 			for (LandClaim lc : fac.getClaims()) {
 				fac.removeClaim(lc);
@@ -958,7 +1209,7 @@ public class Commands implements CommandExecutor{
 		}
 		
 		//get players faction
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
+		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		if (fac == null) {
 			sender.sendMessage("You can't do this because you are not in a faction.");
 			return false;
@@ -1004,16 +1255,16 @@ public class Commands implements CommandExecutor{
 			String[] extraArguments) {
 		Player player ;
 		
-		//TODO: account for faction member rank
-		
 		if ( !( sender instanceof Player )) {
 			player = null;
 		} else {
 			player = (Player) sender;
 		}
 		
-		Faction fac = Helper.returnFactionThatPlayerIsIn(player.getUniqueId());
-		if (fac == null) {
+		PlayerInfo pi = new PlayerInfo(player);
+		
+		Faction fac = pi.getPlayerFaction();
+		if (!pi.isPlayerInAFaction()) {
 			sender.sendMessage("Land claim failed! You are not in a faction.");
 			return false;
 		}
@@ -1023,6 +1274,12 @@ public class Commands implements CommandExecutor{
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
+			if(!Helper.doesGroupHavePermission(Can.CLAIM, pi.getPlayerGroup())) {
+				sender.sendMessage(MsgPrefix.ERR + "You do not have permission to claim land in your faction.");
+				sender.sendMessage(MsgPrefix.OK + "Groups in your faction that can claim: " + Helper.getGroupsByPermission(fac, Can.CLAIM));
+				return false;
+			}
+			
 			if ( Helper.isSpecifiedChunkInsideAnyFaction(chunk)  ) {
 				//TODO: account for diplomacy
 				//TODO: account for contest claiming

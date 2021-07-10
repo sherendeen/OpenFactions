@@ -16,6 +16,7 @@ import openFactions.objects.Faction;
 import openFactions.objects.Group;
 import openFactions.objects.LandClaim;
 import openFactions.objects.Visa;
+import openFactions.objects.Warp;
 import openFactions.objects.enums.Can;
 import openFactions.objects.enums.RelationshipType;
 
@@ -90,13 +91,18 @@ public class Helper {
         		Can.SET_RELATION, 
         		Can.SET_VISA, 
         		Can.UNCLAIM,
-        		Can.UNCLAIM_ALL );
+        		Can.UNCLAIM_ALL,
+        		Can.PROPOSE_RESOLUTION,
+        		Can.SET_FACTION_WARP,
+        		Can.VOTE,
+        		Can.USE_FACTION_WARP);
     }
     
     public static Group createCommonGroup() {
         return new Group("common", false, Period.ZERO, false, 1,  
         		Can.CHANGE_FACTION_DESC,
-        		Can.EDIT_CLAIM 
+        		Can.EDIT_CLAIM,
+        		Can.USE_FACTION_WARP
         );
     }
     
@@ -116,6 +122,72 @@ public class Helper {
             }
         }
         return false;
+    }
+    
+    public static boolean warpExists(final String warpStr, final Faction fac) {
+    	
+    	for(Warp warp : fac.getWarps()) {
+    		if (warp.getWarpName().equalsIgnoreCase(warpStr)) {
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+    /**
+     * returns applicable warp by its name
+     * @param warpStr specified warp name
+     * @param fac the faction in which to look
+     * @return the warp, OR NULL
+     */
+    public static Warp getWarpByName(final String warpStr, final Faction fac) {
+    	
+    	for(Warp warp : fac.getWarps()) {
+    		if (warp.getWarpName().equalsIgnoreCase(warpStr)) {
+    			return warp;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    public static String formatPermissionsArrayToString(final Can... permissions) {
+    	String result = "";
+    	for (int i = 0 ; i < permissions.length; i++) {
+    		result += permissions[i].toString();
+    	}
+    	return result;
+    }
+    
+    public static String formatPermissionsArrayToString(final ArrayList<Can> permissions) {
+    	String result = ":";
+    	
+    	for (Can can : permissions) {
+    		result += can.toString() + ":";
+    	}
+    	
+    	return result;
+    }
+    
+    /**
+     * Returns any and all groups that have a specific permission within a faction
+     * @param fac faction in question
+     * @param can permission
+     * @return any groups that have that permission
+     */
+    public static ArrayList<Group> getGroupsByPermission(final Faction fac, 
+    		final Can can) {
+    	// groups to be returned
+    	ArrayList<Group> groups = new ArrayList<Group>();
+    	// if a group within a faction has a permission
+    	for(Group g : fac.getGroups()) {
+    		if (g.hasPermission(can)) {
+    			groups.add(g);//add it to the returned list
+    		}
+    	}
+    	
+    	return groups;
     }
     
     public static Group removeAllMembersFromGroup(Group group) {
@@ -178,7 +250,21 @@ public class Helper {
         return -1;
     }
     
-    public static Faction returnFactionThatPlayerIsIn(final UUID playerUUID) {
+    /**
+     * Alias of `returnFactionThatPlayerIsIn`
+     * @param playerUUID
+     * @return
+     */
+//    public static Faction getPlayerFaction(final UUID playerUUID) {
+//    	return returnFactionThatPlayerIsIn(playerUUID);
+//    }
+    
+    /**
+     * Return faction object that player is in 
+     * @param playerUUID player uuid
+     * @return the faction object, or null
+     */
+    public static Faction getPlayerFaction(final UUID playerUUID) {
         for (final Faction fac : CustomNations.factions) {
             for (final UUID member : fac.getMembers()) {
                 if (member.equals(playerUUID)) {
@@ -271,7 +357,7 @@ public class Helper {
         Faction fac = null;
         // check to see if the player is even in a faction
         if (isPlayerInAnyFaction(player.getDisplayName())) {
-            fac = returnFactionThatPlayerIsIn(player.getUniqueId());
+            fac = getPlayerFaction(player.getUniqueId());
         }
         
         LandClaim lc = null;
@@ -318,7 +404,7 @@ public class Helper {
         Faction fac = null;
         //if the player is in a faction.. get their faction
         if (isPlayerInAnyFaction(player.getDisplayName())) {
-            fac = returnFactionThatPlayerIsIn(player.getUniqueId());
+            fac = getPlayerFaction(player.getUniqueId());
         }
         
         LandClaim lc = null;

@@ -52,7 +52,8 @@ public class CustomNations extends JavaPlugin{
 		this.w = getServer().getWorld("world");
 		
 		try {
-			Files.list(new File(System.getProperty("user.dir")).toPath()).forEach(path ->{
+			Files.list(new File(System.getProperty("user.dir")+"/OpenFactions/").toPath()).forEach(path ->{
+				System.out.println("PATH:" + path);
 				
 				if (path.toAbsolutePath().toString().endsWith(".fbin")) {
 					System.out.println("*" + path);
@@ -68,6 +69,9 @@ public class CustomNations extends JavaPlugin{
 		for (int i = 0; i < paths.size(); i++ ) {
 			CustomNations.factions.add(Faction.deserialize(paths.get(i)));
 		}
+		
+		File f = new File(".");
+		System.out.println(f.getAbsolutePath());
 		
 		System.out.println("Loading saved chunks...");
 		for(Faction fac : CustomNations.factions) {

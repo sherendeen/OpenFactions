@@ -28,12 +28,19 @@ import openFactions.util.Helper;
 
 public class Faction implements Serializable {
 
+	/**
+	 * serial version of this faction object and related objects
+	 */
+	private static final long serialVersionUID = 901448862403914419L;
+
 	private String name;
 	
 	private String dateCreated;
 	private ArrayList<Visa> visas = new ArrayList<Visa>();
 	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
+	
+	private ArrayList<Warp> warps = new ArrayList<Warp>();
 	
 	private HashMap<String, RelationshipType> relationships = new HashMap<String, RelationshipType>(); 
 
@@ -165,7 +172,7 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + Helper.returnListOfNames(this.members) + ", claimList: {"
+		return "name:" + name + ", description: " + desc + ", dateCreated: " + dateCreated + ", members=" + Helper.returnListOfNames(this.members) + ", claimList: {"
 				+ Helper.getArrayListOfCoordinates(this.claimList) + "}, groups: " + getListOfGroupNames(groups) + ", default group upon joining: "+this.defaultGroup.getName();
 	}
 
@@ -252,7 +259,7 @@ public class Faction implements Serializable {
 	}
 	
 	public String getAutoFileName() {
-		return "faction_" + getSerialUUID() + "_.fbin";
+		return "OpenFactions/faction_" + getSerialUUID() + "_.fbin";
 	}
 
 	/**
@@ -337,5 +344,21 @@ public class Faction implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public ArrayList<Warp> getWarps() {
+		return warps;
+	}
+
+	public void setWarps(ArrayList<Warp> warps) {
+		this.warps = warps;
+	}
+	
+	public void addWarp(Warp warp) {
+		this.warps.add(warp);
+	}
+	
+	public void removeWarp(Warp warp) {
+		this.warps.remove(warp);
 	}
 }
