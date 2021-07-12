@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
@@ -183,9 +184,9 @@ public class Commands implements CommandExecutor{
 
 		case "help":
 		default:
-			sender.sendMessage("--- OpenFactions Commands ---");
+			sender.sendMessage(MsgPrefix.INFO + "--- OpenFactions Commands ---");
 			for (int i = 0; i <  Cmd.values().length; i++) {
-				sender.sendMessage(Cmd.values()[i].toString());
+				sender.sendMessage(ChatColor.AQUA + Cmd.values()[i].toString());
 			}
 			return true;
 		}
@@ -222,7 +223,7 @@ public class Commands implements CommandExecutor{
 				!warp.getAssociatedGroup().equals(pi.getPlayerGroup())) {
 			
 			sender.sendMessage(MsgPrefix.ERR + "Your group is not allowed to use faction warps.");
-			sender.sendMessage("Groups in your faction that can: " +
+			sender.sendMessage(MsgPrefix.INFO + "Groups in your faction that can: " +
 					Helper.getGroupsByPermission(pi.getPlayerFaction(), Can.USE_FACTION_WARP));
 			return false;
 		}
@@ -233,7 +234,7 @@ public class Commands implements CommandExecutor{
 		//
 		if (coolDowns.containsKey(player.getName())) {
 			
-			System.out.println(MsgPrefix.DEBUG +"cooldowns contains key");
+			System.out.println(MsgPrefix.DEBUG +"Cooldowns contains key");
 			
 			long secondsLeft = getSecondsLeft(player);
 			
@@ -264,23 +265,23 @@ public class Commands implements CommandExecutor{
 		PlayerInfo pi = new PlayerInfo(player);
 		sender.sendMessage(MsgPrefix.INFO + "--- Your Information---");
 		if (pi.isPlayerInAFaction()) {
-			sender.sendMessage("Your faction: " + pi.getPlayerFaction().getName());
-			sender.sendMessage("Faction description: " + pi.getPlayerFaction().getDesc());
+			sender.sendMessage(ChatColor.AQUA + "Your faction: " + pi.getPlayerFaction().getName());
+			sender.sendMessage(ChatColor.AQUA + "Faction description: " + pi.getPlayerFaction().getDesc());
 			
-			sender.sendMessage("All groups in your faction:");
+			sender.sendMessage(ChatColor.AQUA + "All groups in your faction:");
 			for (int i = 0 ; i < pi.getPlayerFaction().getGroups().size(); i++) {
 				sender.sendMessage(i+1+"." + pi.getPlayerFaction().getGroups().get(i).getName());
 			}
 			
 		} else {
-			sender.sendMessage("Your faction: n/a.");
-			sender.sendMessage("Faction description: n/a");
-			sender.sendMessage("Your group: n/a.");
+			sender.sendMessage(ChatColor.AQUA + "Your faction: n/a.");
+			sender.sendMessage(ChatColor.AQUA + "Faction description: n/a");
+			sender.sendMessage(ChatColor.AQUA + "Your group: n/a.");
 			
 		}
 		// they should be in a group...
 		if (pi.isPlayerInAGroup()) {
-			sender.sendMessage("Your group/division: " + pi.getPlayerGroup().getName());
+			sender.sendMessage(ChatColor.AQUA + "Your group/division: " + pi.getPlayerGroup().getName());
 //			sender.sendMessage("Your permissions: " 
 //					+ Helper.formatPermissionsArrayToString(pi.getPlayerGroup().getGroupPermissions()));
 		}
@@ -327,7 +328,7 @@ public class Commands implements CommandExecutor{
 			// list groups that have this permission/ability
 			if (groups != null && groups.size() >= 1) {
 				for(int i = 0 ; i < groups.size(); i++) {
-					sender.sendMessage("" + i+1 + ". " + groups.get(i).getName());
+					sender.sendMessage(ChatColor.AQUA + MsgPrefix.INFO + "" + i+1 + ". " + groups.get(i).getName());
 				}
 			} else {
 				// rare, highly unlikely, but it is theoretically possible
@@ -409,7 +410,7 @@ public class Commands implements CommandExecutor{
 		
 		//Sender has to specify a player, more specifically, a real one	
 		if(extraArguments.length < 2) {
-			sender.sendMessage("You must specify a player!");
+			sender.sendMessage(MsgPrefix.ERR +"You must specify a player!");
 			return true;
 		}
 		
@@ -417,14 +418,14 @@ public class Commands implements CommandExecutor{
 		try {
 			visaHolder = getUuidFromPlayerName(extraArguments[1]);
 		} catch(NullPointerException e) {
-			sender.sendMessage("You must specify a real player!");
+			sender.sendMessage(MsgPrefix.ERR + "You must specify a real player!");
 			return true;
 		}
 		
 		if(visaHolder != null) {
 			
 			if(Helper.isPlayerInAnyFaction(player.getName()) == false) {
-				sender.sendMessage("You are not in a faction!");
+				sender.sendMessage(MsgPrefix.ERR +"You are not in a faction!");
 				return true;
 			}
 			
@@ -435,7 +436,7 @@ public class Commands implements CommandExecutor{
 			for(int i = 0; i < senderFactionVisaList.size(); i++) {
 				Visa v = senderFactionVisaList.get(i);
 				if(v.getVisaHolder().equals(visaHolder)) {
-					sender.sendMessage("That player already has a visa.");
+					sender.sendMessage(MsgPrefix.OK + "That player already has a visa.");
 					return true;
 				}
 			}				
@@ -444,7 +445,7 @@ public class Commands implements CommandExecutor{
 			case(2): 
 				Visa visa = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
 				senderFaction.addVisa(visa);
-				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
+				sender.sendMessage(MsgPrefix.OK + "Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
 				return true; 		
 			case(3):		
 				try {
@@ -455,7 +456,7 @@ public class Commands implements CommandExecutor{
 				if (expirationDate instanceof Date) {
 					Visa visa2 = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
 					senderFaction.addVisa(visa2);
-					sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
+					sender.sendMessage(MsgPrefix.OK + "Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
 					return true;			
 				}
 				//If there is a second argument, but it is not an expiration date, then the visa class will be the 2nd argument
@@ -463,17 +464,17 @@ public class Commands implements CommandExecutor{
 					visaClass = extraArguments[2]; 
 					visaClassInteger = Integer.valueOf(visaClass);
 					if(visaClassInteger > 5 || visaClassInteger < 0) {
-						sender.sendMessage("Visa class must be a number from 0 to 4");
+						sender.sendMessage(MsgPrefix.ERR + "Visa class must be a number from 0 to 4");
 						return true;
 					}
 				}
 				catch (NumberFormatException e) {
-					sender.sendMessage("Visa class must be a number");
+					sender.sendMessage(MsgPrefix.ERR + "Visa class must be a number");
 					return true;
 				}
 				Visa visa2 = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
 				senderFaction.addVisa(visa2);
-				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
+				sender.sendMessage(MsgPrefix.OK + "Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName());
 				return true;
 			//If there are three arguments, then they will represent Player, Expiration Date and Class
 			case(4): 
@@ -485,20 +486,20 @@ public class Commands implements CommandExecutor{
 					visaClass = extraArguments[3]; 
 					visaClassInteger = Integer.valueOf(visaClass);
 					if(visaClassInteger > 5 || visaClassInteger < 0) {
-						sender.sendMessage("Visa class must be a number from 0 to 4");
+						sender.sendMessage(MsgPrefix.ERR + "Visa class must be a number from 0 to 4");
 						return true;
 					}
 				}
 				catch (NumberFormatException e) {
-					sender.sendMessage("Visa class must be a number from 0 to 4");
+					sender.sendMessage(MsgPrefix.ERR + "Visa class must be a number from 0 to 4");
 					return true;
 				} catch (ParseException e) {
-					sender.sendMessage("Incorrect format, the correct date format is mm/dd/yyyy");
+					sender.sendMessage(MsgPrefix.ERR + "Incorrect format, the correct date format is mm/dd/yyyy");
 					return true;
 				}
 				Visa visa3 = new Visa(currentDate, expirationDate, senderFaction.getName(), visaHolder, visaClassInteger);
 				senderFaction.addVisa(visa3);
-				sender.sendMessage("Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
+				sender.sendMessage(MsgPrefix.OK + "Granted " + extraArguments[1] + " a Class " + visaClass + " visa for " + senderFaction.getName() + " until " + expirationDateString);
 				return true;
 					
 			}		
@@ -515,7 +516,7 @@ public class Commands implements CommandExecutor{
 		//Sender has to specify a player, more specifically, a real one
 		
 		if(extraArguments.length < 2) {
-			sender.sendMessage("You must specify a player!");
+			sender.sendMessage(MsgPrefix.ERR + "You must specify a player!");
 			return true;
 		}
 		
@@ -524,12 +525,12 @@ public class Commands implements CommandExecutor{
 		try {
 			visaHolder = getUuidFromPlayerName(extraArguments[1]);
 		} catch(NullPointerException e) {
-			sender.sendMessage("You must specify a real player!");
+			sender.sendMessage(MsgPrefix.ERR + "You must specify a real player!");
 			return true;
 		}
 		
 		if(Helper.isPlayerInAnyFaction(player.getName()) == false) {
-			sender.sendMessage("You are not in a faction!");
+			sender.sendMessage(MsgPrefix.ERR + "You are not in a faction!");
 			return true;
 		}
 		
@@ -542,11 +543,11 @@ public class Commands implements CommandExecutor{
 				Visa v = senderFactionVisaList.get(i);
 				if(v.getVisaHolder().equals(visaHolder)) {
 					senderFactionVisaList.remove(i);
-					sender.sendMessage("Revoked " + extraArguments[1] + "'s visa");
+					sender.sendMessage(MsgPrefix.OK + "Revoked " + extraArguments[1] + "'s visa");
 					return true;
 				}
 			}
-			sender.sendMessage("That player does not have a visa!");
+			sender.sendMessage(MsgPrefix.ERR + "That player does not have a visa!");
 			return true;
 			
 		}
@@ -562,7 +563,7 @@ public class Commands implements CommandExecutor{
 		//Sender has to specify a player, more specifically, a real one
 		
 		if(extraArguments.length < 2) {
-			sender.sendMessage("You must specify a player!");
+			sender.sendMessage(MsgPrefix.ERR + "You must specify a player!");
 			return true;
 		}
 		
@@ -571,7 +572,7 @@ public class Commands implements CommandExecutor{
 		try {
 			visaHolder = getUuidFromPlayerName(extraArguments[1]);
 		} catch(NullPointerException e) {
-			sender.sendMessage("You must specify a real player!");
+			sender.sendMessage(MsgPrefix.ERR + "You must specify a real player!");
 			return true;
 		}
 		Faction senderFaction = Helper.getPlayerFaction(player.getUniqueId());
@@ -586,7 +587,7 @@ public class Commands implements CommandExecutor{
 					return true;
 				}
 			}
-			sender.sendMessage("That player does not have a visa!");
+			sender.sendMessage(MsgPrefix.ERR + "That player does not have a visa!");
 			return true;
 			
 		}
@@ -598,7 +599,7 @@ public class Commands implements CommandExecutor{
 		UUID uuid = Helper.getUuidFromPlayerName(extraArguments[1]);
         System.out.println("OFDB: whoisReport: arg0:[" + extraArguments[0] + "], arg1:[" + extraArguments[1] + "]");
         if (uuid == null) {
-            sender.sendMessage(String.valueOf(extraArguments[1]) + " does not exist.");
+            sender.sendMessage(MsgPrefix.ERR + String.valueOf(extraArguments[1]) + " does not exist.");
             return false;
         }
         
@@ -607,11 +608,11 @@ public class Commands implements CommandExecutor{
 	        Faction fac = Helper.getPlayerFaction(uuid);
 	        String playerName = Helper.getPlayerNameFromUuid(uuid);
 	        
-	        sender.sendMessage("--- Who Is " + playerName + "? Report ---");
+	        sender.sendMessage(MsgPrefix.INFO + "--- Who Is " + playerName + "? Report ---");
 	        
-	        sender.sendMessage(String.valueOf(playerName) + " is a member of the faction called " + fac.getName() + ".");
+	        sender.sendMessage(MsgPrefix.INFO + String.valueOf(playerName) + " is a member of the faction called " + fac.getName() + ".");
 	        
-	        sender.sendMessage("They are in the group called " + Helper.getGroupPlayerIsIn(fac, uuid).getName() + ".");
+	        sender.sendMessage(MsgPrefix.INFO + "They are in the group called " + Helper.getGroupPlayerIsIn(fac, uuid).getName() + ".");
         } 
         
         ArrayList<Visa> visasThatThePlayerHas = Helper.getVisasOfPlayer(uuid);
@@ -621,13 +622,13 @@ public class Commands implements CommandExecutor{
             for (Visa visa : visasThatThePlayerHas) {
                 String[] fields = Helper.getVisaReport(visa);
                 for (int i = 0; i < fields.length; ++i) {
-                    sender.sendMessage(fields[i]);
+                    sender.sendMessage(MsgPrefix.INFO + fields[i]);
                 }
             }
-            sender.sendMessage("");
+            sender.sendMessage(MsgPrefix.INFO + "");
         }
         
-        sender.sendMessage(extraArguments[1] + " is not in a faction.");
+        sender.sendMessage(MsgPrefix.ERR + extraArguments[1] + " is not in a faction.");
         return true;
         
 		
@@ -639,7 +640,7 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		
 		if (extraArguments == null) {
-			sender.sendMessage(Helper.getPlayerFaction(player.getUniqueId()).toString());
+			sender.sendMessage(MsgPrefix.INFO + Helper.getPlayerFaction(player.getUniqueId()).toString());
 			return true;
 		}
 		
@@ -650,7 +651,7 @@ public class Commands implements CommandExecutor{
 		for ( Faction faction1 : CustomNations.factions) {
 			//must be bugged
 			if (faction1.getName().equalsIgnoreCase(extraArguments[1])) {
-				sender.sendMessage(faction1.toString());
+				sender.sendMessage(MsgPrefix.INFO + faction1.toString());
 			}
 		}
 		
@@ -662,12 +663,12 @@ public class Commands implements CommandExecutor{
 		//TODO: don't require all caps for input. Suggestion: use toLower
 		
 		if(Helper.getFactionByFactionName(extraArguments[1]) == null) {
-			sender.sendMessage(extraArguments[1] + " is not a real faction!");
+			sender.sendMessage(MsgPrefix.ERR + extraArguments[1] + " is not a real faction!");
 			return false;
 		}
 		
 		Faction fac2 = Helper.getFactionByFactionName(extraArguments[1]);
-		sender.sendMessage(Faction.getRelationshipString(fac2));
+		sender.sendMessage(MsgPrefix.INFO + Faction.getRelationshipString(fac2));
 		
 		return true;
 	}
@@ -684,14 +685,14 @@ public class Commands implements CommandExecutor{
 		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		
 		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
-			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			sender.sendMessage(MsgPrefix.ERR + "This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( Helper.doesGroupHavePermission(Can.ASSIGN_GROUPS, group )== false ) {
-			sender.sendMessage("You aren't allowed to assign people to a group.");
+			sender.sendMessage(MsgPrefix.ERR + "You aren't allowed to assign people to a group.");
 			return false;
 		} 
 		
@@ -701,14 +702,14 @@ public class Commands implements CommandExecutor{
 		UUID uuid = Commands.getUuidFromPlayerName(extraArguments[2]);
 		
 		if (uuid == null) {
-			sender.sendMessage("Specified player does not exist.");
+			sender.sendMessage(MsgPrefix.ERR + "Specified player does not exist.");
 			return false;
 		}
 		
 		
 		if (groupToEdit.getMembers().contains(uuid)) {
 			
-			sender.sendMessage("Player is already in group called " 
+			sender.sendMessage(MsgPrefix.ERR + "Player is already in group called " 
 					+ extraArguments[1] + ".");
 			return false;
 		}
@@ -735,7 +736,7 @@ public class Commands implements CommandExecutor{
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( Helper.doesGroupHavePermission(Can.CHANGE_FACTION_DESC, group )== false ) {
-			sender.sendMessage("You aren't allowed to change the faction description.");
+			sender.sendMessage(MsgPrefix.ERR + "You aren't allowed to change the faction description.");
 			return false;
 		}  else {
 			
@@ -779,7 +780,7 @@ public class Commands implements CommandExecutor{
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( Helper.doesGroupHavePermission(Can.CHANGE_FACTION_NAME, group )== false ) {
-			sender.sendMessage("You aren't allowed to change the faction name.");
+			sender.sendMessage(MsgPrefix.ERR +"You aren't allowed to change the faction name.");
 			return false;
 		} 
 		
@@ -807,28 +808,28 @@ public class Commands implements CommandExecutor{
 		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		
 		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
-			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			sender.sendMessage(MsgPrefix.ERR + "This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( Helper.doesGroupHavePermission(Can.EDIT_GROUPS, group )== false ) {
-			sender.sendMessage("You aren't allowed to edit this particular group.");
+			sender.sendMessage(MsgPrefix.ERR +"You aren't allowed to edit this particular group.");
 			return false;
 		} 
 		
 		Group groupToEdit = Helper.getGroupFromFactionByName(extraArguments[1], fac);
 		
 		if (!Helper.doesStringMatchAValidPermission(extraArguments[2])) {
-			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
+			sender.sendMessage(MsgPrefix.ERR +"Invalid permission: " +extraArguments[2] + ". Try /of help");
 			return false;
 		}
 		//not sure if it is totally necessary to do this
 		//fac.removeGroup(groupToEdit);
 		
 		if (!groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
-			sender.sendMessage("This permission is not in the list of permissions for this group already!");
+			sender.sendMessage(MsgPrefix.ERR + "This permission is not in the list of permissions for this group already!");
 			return false;
 		}
 		
@@ -855,26 +856,26 @@ public class Commands implements CommandExecutor{
 		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		
 		if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
-			sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+			sender.sendMessage(MsgPrefix.ERR + "This group of " + extraArguments[1] + " does NOT exist!" );
 			return false;
 		}
 		
 		Group group = Helper.getGroupPlayerIsIn(fac, player.getUniqueId());
 		
 		if ( !Helper.doesGroupHavePermission(Can.EDIT_GROUPS, group) ) {
-			sender.sendMessage("You aren't allowed to edit this particular group.");
+			sender.sendMessage(MsgPrefix.ERR + "You aren't allowed to edit this particular group.");
 			return false;
 		} 
 		
 		Group groupToEdit = Helper.getGroupFromFactionByName(extraArguments[1], fac);
 		
 		if (!Helper.doesStringMatchAValidPermission(extraArguments[2])) {
-			sender.sendMessage("Invalid permission: " +extraArguments[2] + ". Try /of help");
+			sender.sendMessage(MsgPrefix.ERR + "Invalid permission: " +extraArguments[2] + ". Try /of help");
 			return false;
 		}
 		
 		if (groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
-			sender.sendMessage("This permission has already been added.");
+			sender.sendMessage(MsgPrefix.ERR + "This permission has already been added.");
 			return false;
 		}
 		
@@ -895,17 +896,17 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		
 		if (player == null) { 
-			sender.sendMessage("You cannot issue this command as console.");
+			sender.sendMessage(MsgPrefix.ERR +"You cannot issue this command as console.");
 			return false; 
 		}
 		
 		if (extraArguments.length < 3) {
-			sender.sendMessage("Insufficient number of arguments.");
+			sender.sendMessage(MsgPrefix.ERR + "Insufficient number of arguments.");
 			return false;
 		}
 		
 		if (!Helper.isPlayerInAnyFaction(player.getDisplayName())) {
-			sender.sendMessage("You are not in a faction.");
+			sender.sendMessage(MsgPrefix.ERR +"You are not in a faction.");
 			return false;
 		} 
 		return true;
@@ -916,7 +917,7 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		
 		if (player == null) { 
-			sender.sendMessage("You cannot issue this command as console.");
+			sender.sendMessage(MsgPrefix.ERR +"You cannot issue this command as console.");
 			return false; 
 		}
 		
@@ -936,12 +937,12 @@ public class Commands implements CommandExecutor{
 			Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 			
 			if (Helper.doesGroupExist( extraArguments[1], fac) == false) {
-				sender.sendMessage("This group of " + extraArguments[1] + " does NOT exist!" );
+				sender.sendMessage(MsgPrefix.ERR + "This group of " + extraArguments[1] + " does NOT exist!" );
 				return false;
 			}
 			
-			sender.sendMessage("--- Group Information ---");
-			sender.sendMessage( Helper.getGroupFromFactionByName(extraArguments[1], fac).toString() );
+			sender.sendMessage(MsgPrefix.INFO + "--- Group Information ---");
+			sender.sendMessage(ChatColor.AQUA + Helper.getGroupFromFactionByName(extraArguments[1], fac).toString() );
 		}
 		
 		return true;
@@ -953,12 +954,12 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		
 		if (player == null) { 
-			sender.sendMessage("You cannot issue this command as console.");
+			sender.sendMessage(MsgPrefix.ERR + "You cannot issue this command as console.");
 			return false; 
 		}
 		
 		if (extraArguments.length < 2) {
-			sender.sendMessage("Insufficient number of arguments.");
+			sender.sendMessage(MsgPrefix.ERR + "Insufficient number of arguments.");
 			return false;
 		}
 		
@@ -970,7 +971,7 @@ public class Commands implements CommandExecutor{
 			Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 			
 			if (Helper.doesGroupExist( extraArguments[1], fac)) {
-				sender.sendMessage("This group of " + extraArguments[1] + " already exists!" );
+				sender.sendMessage(MsgPrefix.ERR + "This group of " + extraArguments[1] + " already exists!" );
 				return false;
 			}
 			
@@ -999,7 +1000,7 @@ public class Commands implements CommandExecutor{
 				
 				fac.addGroup(newGroup);
 				
-				sender.sendMessage("New group ["+extraArguments[1]+"] created.");
+				sender.sendMessage(MsgPrefix.OK + "New group ["+extraArguments[1]+"] created.");
 				Faction.serialize(fac, fac.getAutoFileName());
 			}
 			
@@ -1012,10 +1013,10 @@ public class Commands implements CommandExecutor{
 	}
 
 	private boolean listFactions(CommandSender sender) {
-		sender.sendMessage("List of factions - Output");
+		sender.sendMessage(MsgPrefix.INFO + "List of factions - Output");
 		
 		for ( int i = 0 ; i < CustomNations.factions.size(); i++ ) {
-			sender.sendMessage(CustomNations.factions.get(i).toString());
+			sender.sendMessage(ChatColor.AQUA + CustomNations.factions.get(i).toString());
 		}
 		return true;
 	}
@@ -1025,24 +1026,24 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		
 		if (player == null) {
-			sender.sendMessage("The console may not join a faction.");
+			sender.sendMessage(MsgPrefix.ERR + "The console may not join a faction.");
 			return false;
 		}
 		
 		if(Helper.getPlayerFaction(player.getUniqueId()) == null) {
-			sender.sendMessage("You are not in a faction!");
+			sender.sendMessage(MsgPrefix.ERR +"You are not in a faction!");
 			return false; 
 		}
 		
 		Faction faction1 = Helper.getPlayerFaction(player.getUniqueId()); 
 		if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Helper.getFactionByFactionName(faction1.getName()) == null) {
-			sender.sendMessage("That faction name is invalid!");
+			sender.sendMessage(MsgPrefix.ERR + "That faction name is invalid!");
 			return false;
 		}
 		
 		String faction1Name = faction1.getName(); 
 		faction1.setRelationshipByFactionName(faction1Name, extraArguments[1], RelationshipType.valueOf(extraArguments[2]));
-		Bukkit.broadcastMessage(faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
+		Bukkit.broadcastMessage(MsgPrefix.INFO + faction1Name + "declared that they are now an " + extraArguments[2].toUpperCase() + " to " + extraArguments[1]);
 		
 		return true;
 	}
@@ -1052,14 +1053,14 @@ public class Commands implements CommandExecutor{
 		Player player = (Player) sender;
 		
 		if (player == null) {
-			sender.sendMessage("The console may not join a faction.");
+			sender.sendMessage(MsgPrefix.ERR + "The console may not join a faction.");
 			return false;
 		}
 		
 		//we'll assume that we don't need
 		//an invitation
 		if (Helper.isPlayerInAnyFaction(player.getDisplayName())) {
-			sender.sendMessage("You cannot join a faction as you are already in one!");
+			sender.sendMessage(MsgPrefix.ERR + "You cannot join a faction as you are already in one!");
 			return false;
 		} else {
 			for (Faction fac : CustomNations.factions) {
@@ -1073,7 +1074,7 @@ public class Commands implements CommandExecutor{
 					
 					fac.addGroup(def);
 					
-					sender.sendMessage("You have joined " + fac.getName()+".");
+					sender.sendMessage(MsgPrefix.OK + "You have joined " + fac.getName()+".");
 				}
 				
 			}
@@ -1091,15 +1092,15 @@ public class Commands implements CommandExecutor{
 			sender.sendMessage("Faction creation as the console is not allowed.");
 			return false;
 		} else if(Helper.isPlayerInAnyFaction(player.getDisplayName())) {
-			sender.sendMessage("You are already in a faction."
+			sender.sendMessage(MsgPrefix.ERR + "You are already in a faction."
 					+ " You must first leave your faction "
 					+ "in order to make a new one.");
 			return false;
 		} else if (extraArguments.length > 2) {
-			sender.sendMessage("You may not have spaces in your faction name.");
+			sender.sendMessage(MsgPrefix.ERR + "You may not have spaces in your faction name.");
 			return false;
 		} else if (Helper.doesFactionExist(extraArguments[1])) {
-			sender.sendMessage("You may not create a faction with name " 
+			sender.sendMessage(MsgPrefix.ERR + "You may not create a faction with name " 
 					+ extraArguments[1] + " because it already exists.");
 			return false;
 		}
@@ -1108,7 +1109,7 @@ public class Commands implements CommandExecutor{
 		Faction faction = new Faction(extraArguments[1], player.getUniqueId());
 		
 		CustomNations.factions.add(faction);
-		sender.sendMessage("You have created " + faction.getName() + ".");
+		sender.sendMessage(MsgPrefix.OK + "You have created " + faction.getName() + ".");
 		
 		Faction.serialize(faction, faction.getAutoFileName());
 		
@@ -1123,18 +1124,18 @@ public class Commands implements CommandExecutor{
 		
 		if (fac != null) {
 			fac.removeMember(plUuid);
-			pl.sendMessage("You have left " + fac.getName() + ".");
+			pl.sendMessage(MsgPrefix.OK + "You have left " + fac.getName() + ".");
 			//if you are the last member of the faction
 			//delete the faction
 			if ( fac.getMembers().size() < 1 ) {
-				pl.sendMessage("You have disbanded "+fac.getName()+".");
+				pl.sendMessage(MsgPrefix.OK + "You have disbanded "+fac.getName()+".");
 				CustomNations.factions.remove(fac);
 				CustomNations.deleteFactionSave(fac.getAutoFileName());
 				return true;
 			}
 			
 		} else {
-			sender.sendMessage("You are not in a real faction!");
+			sender.sendMessage(MsgPrefix.ERR + "You are not in a real faction!");
 		}
 		return false;
 	}
@@ -1155,18 +1156,18 @@ public class Commands implements CommandExecutor{
 			
 			ArrayList<Faction> facs = Helper.returnFactionObjectsWhereChunkIsFoundIn(chunk);
 			
-			sender.sendMessage("--- Land claim ownership ---");
+			sender.sendMessage(MsgPrefix.INFO + "--- Land claim ownership ---");
 			for(Faction fac : facs) {
 				
 				LandClaim lc = Helper.returnLandClaimContainingSpecifiedChunk(chunk);
 				
-				sender.sendMessage("Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
+				sender.sendMessage(ChatColor.AQUA + "Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
 			}
 			
 			return true;
 			
 		} else {
-			sender.sendMessage("This land is not claimed by anyone.");
+			sender.sendMessage(MsgPrefix.INFO + "This land is not claimed by anyone.");
 		}
 		
 		return false;
@@ -1189,7 +1190,7 @@ public class Commands implements CommandExecutor{
 			for (LandClaim lc : fac.getClaims()) {
 				fac.removeClaim(lc);
 			}
-			sender.sendMessage("You have unclaimed this all land claims.");
+			sender.sendMessage(MsgPrefix.INFO + "You have unclaimed all land claims.");
 			Faction.serialize(fac, fac.getAutoFileName());
 			return true;
 		}
@@ -1211,7 +1212,7 @@ public class Commands implements CommandExecutor{
 		//get players faction
 		Faction fac = Helper.getPlayerFaction(player.getUniqueId());
 		if (fac == null) {
-			sender.sendMessage("You can't do this because you are not in a faction.");
+			sender.sendMessage(MsgPrefix.ERR + "You can't do this because you are not in a faction.");
 			return false;
 		}
 		
@@ -1231,7 +1232,7 @@ public class Commands implements CommandExecutor{
 				//that the current player is in as a member
 				if ( landClaim.equals(lc) ) {
 					fac.removeClaim(lc);
-					sender.sendMessage("You have unclaimed this land claim.");
+					sender.sendMessage(MsgPrefix.OK + "You have unclaimed this land claim.");
 					Faction.serialize(fac, fac.getAutoFileName());
 					return true;
 				}
@@ -1239,7 +1240,7 @@ public class Commands implements CommandExecutor{
 			
 			if ( Helper.isSpecifiedLandClaimInsideAnyFaction(lc)) {
 				//TODO: account for diplomacy
-				sender.sendMessage("This territory is owned by a different faction.");
+				sender.sendMessage(MsgPrefix.INFO + "This territory is owned by a different faction.");
 				return false;
 			} else {
 				fac.addClaim(new LandClaim());
@@ -1265,7 +1266,7 @@ public class Commands implements CommandExecutor{
 		
 		Faction fac = pi.getPlayerFaction();
 		if (!pi.isPlayerInAFaction()) {
-			sender.sendMessage("Land claim failed! You are not in a faction.");
+			sender.sendMessage(MsgPrefix.ERR + "Land claim failed! You are not in a faction.");
 			return false;
 		}
 		
@@ -1283,11 +1284,11 @@ public class Commands implements CommandExecutor{
 			if ( Helper.isSpecifiedChunkInsideAnyFaction(chunk)  ) {
 				//TODO: account for diplomacy
 				//TODO: account for contest claiming
-				sender.sendMessage("This territory is already claimed.");
+				sender.sendMessage(MsgPrefix.ERR + "This territory is already claimed.");
 				return false;
 			} else {
 				fac.addClaim(new LandClaim(chunk));
-				sender.sendMessage("You have successfully claimed this chunk.");
+				sender.sendMessage(MsgPrefix.OK + "You have successfully claimed this chunk.");
 				Faction.serialize(fac, fac.getAutoFileName());
 			}
 			
