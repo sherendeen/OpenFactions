@@ -7,6 +7,8 @@ Features:
 - Group-level permissions
 - Land claiming
 - Visas
+- Faction warps
+- Warp management
 
 Planned features:
 - Embassy zones
@@ -15,12 +17,13 @@ Planned features:
 - NPC populating
 - Assigning specific land claims to be exclusive to a specific group in a faction
 - Creation of a module system
+- Voting
 
 How to build:
-- Download the project
-- Import into Eclipse or an equivalent IDE
-- Create a library reference in Eclipse that references the spigot 1.15.2 .jar file. This is our only dependency right now.
-- Compile!
+- Clone
+- Open as Maven Project in Eclipse
+- ???
+- Profit
 
 License: 
 This plugin is licensed as GPL 3.0. 
