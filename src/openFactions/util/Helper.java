@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -21,6 +22,24 @@ import openFactions.objects.enums.Can;
 import openFactions.objects.enums.RelationshipType;
 
 public class Helper {
+	
+	/**
+	 * if the sender is an instanceof player,
+	 *  cast it as a player, otherwise
+	 * leave player object as null
+	 * @param sender commandSender
+	 * @return player object that might be null
+	 */
+	public static Player validateCommandSender(CommandSender sender) {
+		Player player ;
+		if ( !( sender instanceof Player )) {
+			player = null;
+		} else {
+			player = (Player) sender;
+		}
+		return player;
+	}
+	
 	public static boolean isSpecifiedLandClaimInsideAnyFaction(LandClaim lc) {
         for (Faction fac : CustomNations.factions) {
             for (LandClaim landClaim : fac.getClaims()) {

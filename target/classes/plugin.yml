@@ -10,3 +10,8 @@ commands:
       usage: /of [args]
       permission: of.main
       permission-message: You're not allowed to use this command.
+   ofw:
+      description: warp command
+      usage: /ofw [args]
+      permission: ofw.teleport
+      permission-message: You are not allowed to warp.

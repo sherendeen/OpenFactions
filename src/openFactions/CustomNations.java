@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import openFactions.Commands.Commands;
+import openFactions.Commands.WarpCommandHandler;
 import openFactions.objects.Faction;
 import openFactions.objects.LandClaim;
 
@@ -43,9 +45,10 @@ public class CustomNations extends JavaPlugin{
 	@Override
 	public void onEnable() {
 		
-		
+		//SETUP COMMANDS
 		this.getCommand("of").setExecutor(new Commands(this));
-
+		this.getCommand("ofw").setExecutor(new WarpCommandHandler(this));
+		
 		ArrayList<String> paths = new ArrayList<String>();
 		//TODO: improve this getWorld() so that it isn't hardcoded like this
 		//perhaps make it so that it uses whatever it is configured to use
