@@ -9,7 +9,7 @@
 //MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //GNU General Public License for more details.
 
-package openFactions.Commands;
+package openFactions.commands;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -39,6 +39,7 @@ import openFactions.objects.enums.Can;
 import openFactions.objects.enums.Cmd;
 import openFactions.objects.enums.RelationshipType;
 import openFactions.util.Helper;
+import openFactions.util.constants.MsgHeader;
 import openFactions.util.constants.MsgPrefix;
 
 public class Commands implements CommandExecutor{
@@ -98,6 +99,9 @@ public class Commands implements CommandExecutor{
 		case "list":
 			
 			return listFactions(sender);
+			
+		case "listclaims":
+			return listClaims(sender,player);
 			
 		case "leave":
 			return leaveFaction(sender);
@@ -181,6 +185,32 @@ public class Commands implements CommandExecutor{
 		
 		sender.sendMessage(MsgPrefix.ERR + "Unspecified error in executing command.");
 		return false;
+	}
+
+	/**
+	 * Lists all land claims for the player's faction
+	 * @param sender
+	 * @param player
+	 * @return true (successful execution of command)
+	 */
+	private boolean listClaims(CommandSender sender, Player player) {
+		
+		PlayerInfo pi = new PlayerInfo(player);
+		if(!pi.isPlayerInAFaction()) {
+			sender.sendMessage(MsgPrefix.ERR + "You are not a member of a faction. No claimed chunks to list.");
+			return false;
+		}
+		
+		if ((pi.getPlayerFaction().getClaims().size() < 1)) {
+			sender.sendMessage(MsgPrefix.ERR + "No claimed chunks to list.");
+			return false;
+		}
+		
+		sender.sendMessage(MsgHeader.FACTION_CLAIMS);
+		for (LandClaim lc : pi.getPlayerFaction().getClaims()) {
+			sender.sendMessage(lc.toString());
+		}
+		return true;
 	}
 
 	private boolean showInfo(CommandSender sender) {
@@ -737,17 +767,6 @@ public class Commands implements CommandExecutor{
 			sender.sendMessage(MsgPrefix.ERR +"You cannot issue this command as console.");
 			return false; 
 		}
-		
-//		if (extraArguments.length == 2) {
-//			sender.sendMessage("Insufficient number of arguments.");
-//			return false;
-//		}
-//		
-//		
-//		if (extraArguments.length < 1) {
-//			sender.sendMessage("Insufficient number of arguments.");
-//			return false;
-//		}
 		
 		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
 			

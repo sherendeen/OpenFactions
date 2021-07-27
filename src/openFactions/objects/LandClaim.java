@@ -12,10 +12,10 @@ package openFactions.objects;
 
 import java.io.Serializable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
+import org.bukkit.Location;
 import org.bukkit.World;
-
-import openFactions.CustomNations;
 
 public class LandClaim implements Serializable {
 
@@ -24,6 +24,7 @@ public class LandClaim implements Serializable {
 	private int chunkX;
 	private int chunkZ;
 	private Group exclusiveGroup = null;
+	private String worldName;
 	
 	/**
 	 * Empty constructor; resets chunk value if possible
@@ -42,13 +43,16 @@ public class LandClaim implements Serializable {
 		this.setChunkX(claimedChunk.getX());
 		this.setChunkZ(claimedChunk.getZ());
 		this.setClaimedChunk(claimedChunk);
+		this.setWorldName(claimedChunk.getWorld().getName());
 	}
 	
 	public LandClaim(Chunk claimedChunk, String claimDescriptor) {
 		this.setChunkX(claimedChunk.getX());
 		this.setChunkZ(claimedChunk.getZ());
 		this.setClaimedChunk(claimedChunk);
+		this.setWorldName(claimedChunk.getWorld().getName());
 		this.claimDescriptor = claimDescriptor;
+		
 	}
 	
 	public LandClaim(Chunk claimedChunk, String claimDescriptor, 
@@ -56,8 +60,20 @@ public class LandClaim implements Serializable {
 		this.setChunkX(claimedChunk.getX());
 		this.setChunkZ(claimedChunk.getZ());
 		this.setClaimedChunk(claimedChunk);
+		this.setWorldName(claimedChunk.getWorld().getName());
 		this.claimDescriptor = claimDescriptor;
-		this.setExclusiveGroup(exclusiveGroup);
+		this.exclusiveGroup = exclusiveGroup;
+	}
+	
+	public LandClaim(Chunk claimedChunk, String claimDescriptor, 
+			Group exclusiveGroup, 
+			String worldName) {
+		this.setChunkX(claimedChunk.getX());
+		this.setChunkZ(claimedChunk.getZ());
+		this.setClaimedChunk(claimedChunk);
+		this.claimDescriptor = claimDescriptor;
+		this.exclusiveGroup = exclusiveGroup;
+		this.worldName = worldName;
 	}
 	
 	public void setClaimDescriptor(String claimDescriptor) {
@@ -98,18 +114,20 @@ public class LandClaim implements Serializable {
 	}
 	
 	/**
-	 * Since we can't serialize chunks, we must serialize chunk coordinates.
+	 * Since we can't serialize chunks, we must serialize 
+	 * chunk coordinates and world names.
 	 * Use of this method is necessary so that we can
 	 *  re-correlate chunks with coordinates upon startup
-	 * @param x 
-	 * @param z
-	 * @param pluginRef
+	 * @param x  x chunk coordinate
+	 * @param z z chunk coordinate
+	 * @param worldName the name of the world as a string
 	 */
-	public void setClaimedChunkFromCoordinates(int x, int z, CustomNations pluginRef) {
-		World w = pluginRef.getWorld();
+	public void setClaimedChunkFromCoordinates(int x, int z, String worldName) {
+//		World w = pluginRef.getWorld();
+		
+		World w = Bukkit.getWorld(worldName);
 		this.claimedChunk = w.getChunkAt(x, z);
 	}
-
 
 	public Group getExclusiveGroup() {
 		return exclusiveGroup;
@@ -119,4 +137,20 @@ public class LandClaim implements Serializable {
 	public void setExclusiveGroup(Group exclusiveGroup) {
 		this.exclusiveGroup = exclusiveGroup;
 	}
+	
+	public String getWorldName() {
+		return worldName;
+	}
+	
+	public void setWorldName(String worldName) {
+		this.worldName = worldName;
+	}
+	
+	@Override
+	public String toString() {
+		return "LandClaim [claimDescriptor=" +(( claimDescriptor!=null ) ? claimDescriptor : "No description provided.")+ ", chunk coordinates: [" + chunkX + ", " + chunkZ
+				+ "], Exclusive Group: " + ((exclusiveGroup!=null) ? exclusiveGroup.getName():"n/a"  )+ ". What world it is on: " + worldName + ".";
+	}
+	
+	
 }

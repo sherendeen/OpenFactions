@@ -1,4 +1,4 @@
-package openFactions.Commands;
+package openFactions.commands;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -105,9 +105,10 @@ public class WarpCommandHandler implements CommandExecutor {
 		int x = player.getLocation().getBlockX();
 		int y = player.getLocation().getBlockY();
 		int z = player.getLocation().getBlockZ();
-		
+		// note: do not use plugin.getWorld().getName() to get worldname since
+		// it should be based on the worldname that the player is actively in
 		Warp warp = new Warp(extraArguments[1],x, y, z, 
-				plugin.getWorld().getName());
+				player.getLocation().getWorld().getName());
 		
 		playerFaction.addWarp(warp);
 		
@@ -180,7 +181,7 @@ public class WarpCommandHandler implements CommandExecutor {
 			return true;
 		}
 		
-		sender.sendMessage(MsgHeader.factionWarps);
+		sender.sendMessage(MsgHeader.FACTION_WARPS);
 		sender.sendMessage(MsgHeader.factionAttribute + "Faction" + MsgHeader.factionAttributeClose + pi.getPlayerFaction().getName());
 		for(Warp w : pi.getPlayerFaction().getWarps()) {
 			sender.sendMessage(MsgHeader.factionAttribute + w.getWarpName() + MsgHeader.factionAttributeClose);
@@ -190,7 +191,7 @@ public class WarpCommandHandler implements CommandExecutor {
 			} else {
 				sender.sendMessage(MsgPrefix.LIST + "[" + w.getWarpName() + "] is not associated with any particular group.");
 			}
-			
+			sender.sendMessage(MsgSeparator.SPACE_QUAD + "- located in " +MsgHeader.factionAttribute + w.getWorldName() +MsgHeader.factionAttributeClose );
 			
 		}
 		return true;

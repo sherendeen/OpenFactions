@@ -76,5 +76,13 @@ public class Warp implements Serializable {
 
 	public void setWorldName(String worldName) {
 		this.worldName = worldName;
-	}	
+	}
+
+	@Override
+	public String toString() {
+		return "Warp Name:" + warpName + ", coordinates " + warpX + ", " + warpY + ", " + warpZ
+				+ ". World Name:" + worldName + ". Associated Group:" + associatedGroup + "";
+	}
+	
+	
 }

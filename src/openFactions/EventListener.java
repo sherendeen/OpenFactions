@@ -8,7 +8,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import openFactions.util.Helper;
 
 public class EventListener implements Listener {
-private CustomNations plugin;
+	private CustomNations plugin;
     
     public EventListener(CustomNations plugin) {
         this.plugin = plugin;
