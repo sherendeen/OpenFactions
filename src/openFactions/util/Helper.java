@@ -1,5 +1,6 @@
 package openFactions.util;
 
+import java.text.SimpleDateFormat;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,8 +21,31 @@ import openFactions.objects.Visa;
 import openFactions.objects.Warp;
 import openFactions.objects.enums.Can;
 import openFactions.objects.enums.RelationshipType;
+import openFactions.util.constants.MsgPrefix;
 
 public class Helper {
+	
+	public static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+	
+	public static boolean isValid(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage(MsgPrefix.ERR +"You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length < 3) {
+			sender.sendMessage(MsgPrefix.ERR + "Insufficient number of arguments.");
+			return false;
+		}
+		
+		if (!Helper.isPlayerInAnyFaction(player.getDisplayName())) {
+			sender.sendMessage(MsgPrefix.ERR +"You are not in a faction.");
+			return false;
+		} 
+		return true;
+	}
 	
 	/**
 	 * if the sender is an instanceof player,

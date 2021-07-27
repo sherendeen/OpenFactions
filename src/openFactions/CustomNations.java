@@ -1,5 +1,5 @@
 /** 
- Copyright (C) 2018-2020 Seth Herendeen; Samuel Inciarte
+ Copyright (C) 2018, 2019, 2020, 2021 Seth Herendeen; Samuel Inciarte
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import openFactions.commands.Commands;
+import openFactions.commands.CommandCore;
 import openFactions.commands.WarpCommandHandler;
 import openFactions.objects.Faction;
 import openFactions.objects.LandClaim;
@@ -35,11 +35,19 @@ import openFactions.objects.LandClaim;
  */
 public class CustomNations extends JavaPlugin{
 	
+	//private CommandCore cmdCore;
+	
 	public static ArrayList<Faction> factions = new ArrayList<Faction>(); 
 	
 	private EventListener ev;
 	
 	private World w ;
+	/**
+	 * @deprecated use of getWorld() is bad since we can refer to whatever world the player is on
+	 * maybe this is useful for something still but I doubt it
+	 * @author Seth 
+	 * @return get's the server world reference called "world"
+	 */
 	public World getWorld() {
 		return this.w;
 	}
@@ -48,8 +56,10 @@ public class CustomNations extends JavaPlugin{
 	public void onEnable() {
 		
 		//SETUP COMMANDS
-		this.getCommand("of").setExecutor(new Commands(this));
+		//this.getCommand("of").setExecutor(new Commands(this));
+		this.getCommand("of").setExecutor(new CommandCore(this));
 		this.getCommand("ofw").setExecutor(new WarpCommandHandler(this));
+		
 		
 		
 		//TODO: improve this getWorld() so that it isn't hardcoded like this
