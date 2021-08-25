@@ -151,8 +151,8 @@ public class CommandCore implements CommandExecutor {
 			return cmdShowGroup.handle(sender, extraArguments);
 			
 		case "setrelation":
-			
-			return cmdSetRelation.handle(sender,extraArguments); 
+			//true = command will fully execute
+			return cmdSetRelation.handle(sender,extraArguments,true); 
 			
 		case "showrelations":
 			

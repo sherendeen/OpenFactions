@@ -55,21 +55,23 @@ public class CustomNations extends JavaPlugin{
 	@Override
 	public void onEnable() {
 		
-		//SETUP COMMANDS
+		// SETUP COMMANDS
 		//this.getCommand("of").setExecutor(new Commands(this));
 		this.getCommand("of").setExecutor(new CommandCore(this));
 		this.getCommand("ofw").setExecutor(new WarpCommandHandler(this));
 		
 		
 		
-		//TODO: improve this getWorld() so that it isn't hardcoded like this
-		//perhaps make it so that it uses whatever it is configured to use
-		
+		// TODO: improve this getWorld() so that it isn't hardcoded like this
+		// perhaps make it so that it uses whatever it is configured to use.
+		// 
+		// this.w refers to ``public World getWorld()`` which is now deprecated
 		this.w = getServer().getWorld("world");
+		
 		Path testablePath = Paths.get(System.getProperty("user.dir") + "/OpenFactions/");
 		
 		// if the OpenFactions directory even exists, then do XYZ
-		if ( Files.exists(testablePath))  {
+		if ( Files.exists(testablePath) )  {
 			//extracted methods
 			deserialize();
 		} else {
@@ -87,10 +89,6 @@ public class CustomNations extends JavaPlugin{
 		System.out.println("Done with chunks.");
 		System.out.println("Starting event listener...");
 		this.ev = new EventListener(this);
-		
-		
-		
-			
 	}
 
 	private void deserialize() {

@@ -44,6 +44,8 @@ public class Faction implements Serializable {
 	
 	private HashMap<String, RelationshipType> relationships = new HashMap<String, RelationshipType>(); 
 
+	private ArrayList<Resolution> currentResolutions = new ArrayList<Resolution>();
+	
 	/** 
 	 * List of land claims made by this faction.
 	 * Encapsulates chunk coordinates, string descriptors, and 
@@ -360,5 +362,21 @@ public class Faction implements Serializable {
 	
 	public void removeWarp(Warp warp) {
 		this.warps.remove(warp);
+	}
+
+	public ArrayList<Resolution> getCurrentResolutions() {
+		return currentResolutions;
+	}
+
+	public void setCurrentResolutions(ArrayList<Resolution> currentResolutions) {
+		this.currentResolutions = currentResolutions;
+	}
+	
+	public void addResolution(Resolution resolution) {
+		this.currentResolutions.add(resolution);
+	}
+	
+	public void removeResolution(Resolution resolution) {
+		this.currentResolutions.remove(resolution);
 	}
 }

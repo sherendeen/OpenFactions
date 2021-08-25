@@ -43,11 +43,11 @@ public class CmdRemovePermission {
 		//not sure if it is totally necessary to do this
 		//fac.removeGroup(groupToEdit);
 		
-		if (!groupToEdit.hasPermission(Can.valueOf(extraArguments[2]))) {
+		if (!groupToEdit.hasPermission(Can.valueOf(extraArguments[2].toUpperCase()))) {
 			sender.sendMessage(MsgPrefix.ERR + "This permission is not in the list of permissions for this group already!");
 			return false;
 		}
-		sender.sendMessage(MsgPrefix.INFO + "Permission " + Can.valueOf(extraArguments[2]) + 
+		sender.sendMessage(MsgPrefix.INFO + "Permission " + Can.valueOf(extraArguments[2].toUpperCase()) + 
 				" removed for group " + group.getName() + ".");
 		groupToEdit.removePermission(Can.valueOf(extraArguments[2]));
 		

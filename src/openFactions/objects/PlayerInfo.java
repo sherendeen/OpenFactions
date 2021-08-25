@@ -28,7 +28,7 @@ public class PlayerInfo {
 		
 		this.playerVisas = Helper.getVisasOfPlayer(this.playerUUID);
 	}
-
+	
 	public UUID getPlayerUUID() {
 		return playerUUID;
 	}

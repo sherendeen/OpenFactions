@@ -15,7 +15,7 @@ import openFactions.util.constants.MsgPrefix;
 public class CmdClaimLand {
 
 	public boolean handle(CommandSender sender, Command command, String[] extraArguments) {
-Player player = Helper.validateCommandSender(sender);
+		Player player = Helper.validateCommandSender(sender);
 		
 		PlayerInfo pi = new PlayerInfo(player);
 		
