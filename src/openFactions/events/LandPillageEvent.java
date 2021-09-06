@@ -9,6 +9,7 @@ import openFactions.CustomNations;
 import openFactions.commands.CommandCore;
 import openFactions.objects.Faction;
 import openFactions.objects.LandClaim;
+import openFactions.util.constants.MsgPrefix;
 
 public class LandPillageEvent extends Event implements Cancellable{
 
@@ -29,6 +30,7 @@ public class LandPillageEvent extends Event implements Cancellable{
     
     public boolean pillageLand() {
     	
+    	
     	if(!(pillager.getClaims().contains(pillagedClaim))) {
         	  Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
         	  @Override
@@ -37,8 +39,17 @@ public class LandPillageEvent extends Event implements Cancellable{
 //            		  success = false;
 //        		  }
 
-        		  pillager.getClaims().add(pillagedClaim);
-        		  pillaged.getClaims().remove(pillagedClaim);
+        		  //debug
+        		  System.out.println();
+        		  System.out.println(MsgPrefix.DEBUG + pillagedClaim.toString());
+        		  
+//        		  
+//        		  pillager.getClaims().add(pillagedClaim);
+//        		  pillaged.getClaims().remove(pillagedClaim);
+//        		  
+        		  pillager.addClaim(pillagedClaim);
+        		  pillaged.removeClaim(pillagedClaim);
+        		  
         		  success = true;
         		  plugin.getServer().broadcastMessage("debug");
         	  }
