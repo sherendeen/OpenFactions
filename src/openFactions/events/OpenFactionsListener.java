@@ -1,18 +1,23 @@
-package openFactions;
+package openFactions.events;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
+import openFactions.CustomNations;
 import openFactions.util.Helper;
 
-public class EventListener implements Listener {
+public class OpenFactionsListener implements Listener {
 	private CustomNations plugin;
     
-    public EventListener(CustomNations plugin) {
+    public OpenFactionsListener(CustomNations plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+    }
+    @EventHandler
+    public void LandPillageEvent(LandPillageEvent event) {
+    	event.pillageLand();
     }
     
     @EventHandler

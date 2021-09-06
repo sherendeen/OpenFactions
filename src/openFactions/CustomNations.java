@@ -25,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import openFactions.commands.CommandCore;
 import openFactions.commands.WarpCommandHandler;
+import openFactions.events.OpenFactionsListener;
 import openFactions.objects.Faction;
 import openFactions.objects.LandClaim;
 
@@ -39,7 +40,7 @@ public class CustomNations extends JavaPlugin{
 	
 	public static ArrayList<Faction> factions = new ArrayList<Faction>(); 
 	
-	private EventListener ev;
+	private OpenFactionsListener ev;
 	
 	private World w ;
 	/**
@@ -88,7 +89,7 @@ public class CustomNations extends JavaPlugin{
 		}
 		System.out.println("Done with chunks.");
 		System.out.println("Starting event listener...");
-		this.ev = new EventListener(this);
+		this.ev = new OpenFactionsListener(this);
 	}
 
 	private void deserialize() {

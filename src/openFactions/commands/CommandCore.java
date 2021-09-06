@@ -43,6 +43,7 @@ public class CommandCore implements CommandExecutor {
 	private CmdVote cmdVote = new CmdVote();
 	private CmdPropose cmdPropose = new CmdPropose();
 	private CmdHelp cmdHelp = new CmdHelp();
+	private CmdPillage cmdPillage = new CmdPillage();
 	
 	private OFCmdDiplomacy ofCmdDiplomacy = new OFCmdDiplomacy();
 	
@@ -88,6 +89,8 @@ public class CommandCore implements CommandExecutor {
 		case "create":
 			
 			return cmdCreateFaction.handle(sender, extraArguments);
+		case "pillage" :
+			return cmdPillage.handle(sender, command);
 			
 		case "creategroup":
 		case "cg":
