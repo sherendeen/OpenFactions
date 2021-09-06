@@ -1,17 +1,12 @@
 package openFactions.commands;
 
-import java.text.SimpleDateFormat;
-
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import openFactions.CustomNations;
-import openFactions.objects.enums.Cmd;
 import openFactions.util.Helper;
-import openFactions.util.constants.MsgPrefix;
 
 public class CommandCore implements CommandExecutor {
 
@@ -44,6 +39,8 @@ public class CommandCore implements CommandExecutor {
 	private CmdPropose cmdPropose = new CmdPropose();
 	private CmdHelp cmdHelp = new CmdHelp();
 	private CmdPillage cmdPillage = new CmdPillage();
+	private CmdCede cmdCede = new CmdCede();
+	private CmdSetGroup cmdSetGroup = new CmdSetGroup();
 	
 	private OFCmdDiplomacy ofCmdDiplomacy = new OFCmdDiplomacy();
 	
@@ -89,8 +86,12 @@ public class CommandCore implements CommandExecutor {
 		case "create":
 			
 			return cmdCreateFaction.handle(sender, extraArguments);
+		
 		case "pillage" :
 			return cmdPillage.handle(sender, command);
+		
+		case "cede" :
+			return cmdCede.handle(sender, command, extraArguments);
 			
 		case "creategroup":
 		case "cg":
@@ -98,7 +99,6 @@ public class CommandCore implements CommandExecutor {
 			
 		case "desc":
 			return cmdChangeFactionDescription.handle(sender,extraArguments);
-			
 			
 		case "join":
 			
@@ -109,10 +109,13 @@ public class CommandCore implements CommandExecutor {
 			return cmdListFactions.handle(sender);
 			
 		case "listclaims":
+			
 			return cmdListClaims.handle(sender,player);
 			
 		case "leave":
+		
 			return cmdLeaveFaction.handle(sender);
+		
 		case "name":
 			
 			return cmdChangeFactionName.handle(sender,extraArguments);
@@ -138,10 +141,15 @@ public class CommandCore implements CommandExecutor {
 			
 			return cmdWhoIs.handle(sender,extraArguments);
 
+		case "setgroup":
+			
+			return cmdSetGroup.handle(sender,extraArguments);
+			
 		case "setpermission":
 		case "sp":
 			// does not do anything
 			return cmdSetPermission.handle(sender,command,extraArguments);
+			
 		case "info":
 			
 			return cmdShowInfo.handle(sender);
@@ -180,9 +188,6 @@ public class CommandCore implements CommandExecutor {
 		case "help":
 		default:
 			return cmdHelp.handle(sender,extraArguments);
-		}
-		
-	}
-	
-	
+		}	
+	}	
 }

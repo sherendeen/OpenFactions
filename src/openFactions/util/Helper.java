@@ -125,7 +125,7 @@ public class Helper {
         return new Group("admin", false, Period.ZERO, false, 1, Can.ASSIGN_GROUPS, 
         		Can.CHANGE_FACTION_DESC,
         		Can.CHANGE_FACTION_NAME,
-        		Can.CLAIM, Can.DISBAND, 
+        		Can.CLAIM, Can.CEDE, Can.DISBAND, 
         		Can.EDIT_CLAIM,
         		Can.EDIT_CLAIM_SETTINGS, 
         		Can.EDIT_GROUPS,

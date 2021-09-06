@@ -150,7 +150,6 @@ public class Group implements Serializable {
 			this.groupPermissions.add(can);
 		}
 		
-		//this.groupPermissions = groupPermissions2;
 	}
 	
 	public void addPermission(Can permission) {
