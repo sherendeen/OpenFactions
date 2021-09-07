@@ -12,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
 
 import openFactions.CustomNations;
 import openFactions.objects.Faction;
@@ -440,6 +442,65 @@ public class Helper {
             event.setCancelled(true);
         }
     	
+    }
+    
+    public static void HandlePlayerEvent(InventoryOpenEvent event) {
+    	Player player = (Player) event.getPlayer();
+    	Chunk playerChunk = event.getPlayer().getLocation().getChunk();
+    	Faction playerFac = null;
+    	LandClaim lc = null;
+    	//If the inventory is the player's own inventory, carry on. 
+    	
+    	if(event.getInventory().getType() == InventoryType.PLAYER) {
+    		return;
+    	}
+    	
+    	//if the player is in a faction.. get their faction
+        if (isPlayerInAnyFaction(player.getDisplayName())) {
+            playerFac = getPlayerFaction(player.getUniqueId());
+        }
+        //if the specified chunk is NOT inside a faction
+        //then we stop any further checks and
+        //the event is not cancelled!
+        if (!isSpecifiedChunkInsideAnyFaction(playerChunk)) {
+            return;
+        }
+        
+        lc = returnLandClaimContainingSpecifiedChunk(playerChunk);
+        // if the faction is null and the landclaim is not null
+        if (playerFac == null && lc != null) {
+        	//cancel the event because we know that
+        	//the land is owned by someone but the player is not
+        	//in a faction that could possibly interact with it
+            event.setCancelled(true);
+            return;
+        }
+        Group playerGroup = getGroupPlayerIsIn(playerFac, player.getUniqueId());
+        //if this faction is not among the list of factions which possess
+        //this given claim
+        if (!returnFactionObjectsWhereClaimIsFoundIn(lc).contains(playerFac)) {
+        	//then cancel the event
+            event.setCancelled(true);
+            return;
+        }
+        
+        // if the landclaim's exclusive group is NOT NULL
+        // and it does not equal that of the player group
+        // and the player group does not have permission to override claim settings
+        if (lc.getExclusiveGroup() != null && 
+        		!lc.getExclusiveGroup().equals(playerGroup) && 
+        		!doesGroupHavePermission(Can.OVERRIDE_CLAIM_SETTINGS, playerGroup)) {
+            // then we cancel the event
+            event.setCancelled(true);
+            return;
+        }
+        
+        // if the player group DOES NOT have the open_containers permission
+        if (!doesGroupHavePermission(Can.OPEN_CONTAINERS, playerGroup)) {
+        	//then we cancel the event
+            event.setCancelled(true);
+        }
+        
     }
     
     public static void HandlePlayerEvent(BlockPlaceEvent event) {
