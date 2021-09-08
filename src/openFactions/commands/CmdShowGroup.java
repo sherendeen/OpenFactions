@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import openFactions.objects.Faction;
+import openFactions.objects.Group;
 import openFactions.util.Helper;
 import openFactions.util.constants.MsgPrefix;
 
@@ -28,7 +29,11 @@ public class CmdShowGroup {
 			}
 			
 			sender.sendMessage(MsgPrefix.INFO + "--- Group Information ---");
-			sender.sendMessage(ChatColor.AQUA + Helper.getGroupFromFactionByName(extraArguments[1], fac).toString() );
+			Group group = Helper.getGroupFromFactionByName(extraArguments[1], fac);
+			sender.sendMessage(ChatColor.AQUA + "Group name: " + ChatColor.WHITE + group.getName());
+			sender.sendMessage(ChatColor.AQUA + "Number of members: " + ChatColor.WHITE + group.getMembers().size());
+			sender.sendMessage(ChatColor.AQUA + "Is this the default group? " + ((fac.getDefaultGroup().equals(group)) ? ChatColor.GREEN + "Yes": ChatColor.RED + "No"));
+			sender.sendMessage(ChatColor.AQUA + "Group permissions: " +ChatColor.RESET+ group.getGroupPermissions().toString());
 		}
 		
 		return true;

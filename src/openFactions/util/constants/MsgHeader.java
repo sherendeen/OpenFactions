@@ -4,6 +4,9 @@ import org.bukkit.ChatColor;
 
 public class MsgHeader {
 	
+	public static final String FACTION_INFO = MsgSeparator.SPACE_QUAD+MsgSeparator.SPACE_QUAD+ ChatColor.BOLD + ChatColor.BLACK + 
+			MsgSeparator.COLON_TRIPLE + " " + ChatColor.GRAY + "Faction Info" + " " +  
+			ChatColor.BLACK +""+ ChatColor.BOLD + MsgSeparator.COLON_TRIPLE + ChatColor.RESET;
 	/**
 	 * header for faction warps
 	 */
