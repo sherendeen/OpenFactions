@@ -6,6 +6,7 @@ import org.bukkit.entity.Player;
 
 import openFactions.objects.Faction;
 import openFactions.objects.Group;
+import openFactions.objects.PlayerInfo;
 import openFactions.util.Helper;
 import openFactions.util.constants.MsgPrefix;
 
@@ -13,10 +14,16 @@ public class CmdShowGroup {
 
 	public boolean handle(CommandSender sender, String[] extraArguments) {
 		Player player = (Player) sender;
+		PlayerInfo pi = new PlayerInfo(player);
 		
 		if (player == null) { 
 			sender.sendMessage(MsgPrefix.ERR +"You cannot issue this command as console.");
 			return false; 
+		}
+		
+		if (extraArguments.length < 2 && pi.isPlayerInAFaction()) {
+			Helper.listGroups(pi.getPlayerFaction(), pi.getPlayer());
+			return true;
 		}
 		
 		if ( Helper.isPlayerInAnyFaction(player.getDisplayName()) ) {
@@ -38,5 +45,7 @@ public class CmdShowGroup {
 		
 		return true;
 	}
+
+	
 
 }

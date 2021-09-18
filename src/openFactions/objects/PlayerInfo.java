@@ -14,6 +14,7 @@ public class PlayerInfo {
 	private Faction playerFaction;
 	private Group playerGroup;
 	private ArrayList<Visa> playerVisas;
+	private Player player;
 	
 	public PlayerInfo(final Player player) {
 		
@@ -22,11 +23,17 @@ public class PlayerInfo {
 		
 		this.playerFaction = Helper.getPlayerFaction(this.playerUUID);
 		
+		this.player = player;
+		
 		if(Helper.isPlayerInAnyFaction(Helper.getPlayerNameFromUuid(this.playerUUID))) {
 			this.playerGroup = Helper.getGroupPlayerIsIn(playerFaction, this.playerUUID);
 		}
 		
 		this.playerVisas = Helper.getVisasOfPlayer(this.playerUUID);
+	}
+	
+	public Player getPlayer() {
+		return this.player;
 	}
 	
 	public UUID getPlayerUUID() {

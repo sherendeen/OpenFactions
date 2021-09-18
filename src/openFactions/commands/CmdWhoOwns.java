@@ -27,7 +27,7 @@ public class CmdWhoOwns {
 			sender.sendMessage(MsgPrefix.INFO + "--- Land claim ownership ---");
 			for(Faction fac : facs) {
 				
-				LandClaim lc = Helper.returnLandClaimContainingSpecifiedChunk(chunk);
+				LandClaim lc = Helper.getLandClaimFromChunk(chunk);
 				
 				sender.sendMessage(ChatColor.AQUA + "Claimed by "+ fac.getName() + (  lc.getClaimDescriptor().isEmpty() ? ". " +lc.getClaimDescriptor() : "." ) );
 			}

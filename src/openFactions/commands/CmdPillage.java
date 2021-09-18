@@ -20,7 +20,7 @@ public class CmdPillage {
 		Player senderAsPlayer = (Player) sender;
 		UUID senderUUID = senderAsPlayer.getUniqueId();
 		Chunk senderChunk = senderAsPlayer.getLocation().getChunk();
-		LandClaim claimedLand = Helper.returnLandClaimContainingSpecifiedChunk(senderChunk);
+		LandClaim claimedLand = Helper.getLandClaimFromChunk(senderChunk);
 		Faction senderFaction = Helper.getPlayerFaction(senderUUID);
 		Faction landClaimFaction = Helper.returnFactionObjectsWhereChunkIsFoundIn(senderChunk).get(0);
 		

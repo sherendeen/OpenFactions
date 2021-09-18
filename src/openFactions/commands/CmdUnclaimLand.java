@@ -27,7 +27,7 @@ public class CmdUnclaimLand {
 			
 			//get chunk player is in
 			Chunk chunk = player.getLocation().getChunk();
-			LandClaim lc = Helper.returnLandClaimContainingSpecifiedChunk(chunk);
+			LandClaim lc = Helper.getLandClaimFromChunk(chunk);
 			
 			if(lc == null) {
 				return false;

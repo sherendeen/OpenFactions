@@ -17,8 +17,9 @@ public class CmdShowFactionInfo {
 
 		Player player = (Player) sender;
 		PlayerInfo pi = new PlayerInfo(player);
-		
-		if (extraArguments == null && pi.isPlayerInAFaction()) {
+		// should be fixed so as to accomodate people who meant to write
+		// `/of info` instead
+		if (extraArguments.length < 2 && pi.isPlayerInAFaction()) {
 			sender.sendMessage(MsgPrefix.INFO + Helper.getPlayerFaction(player.getUniqueId()).toString());
 			return true;
 		}

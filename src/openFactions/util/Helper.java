@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -100,7 +101,20 @@ public class Helper {
         return result;
     }
     
-    public static LandClaim returnLandClaimContainingSpecifiedChunk(Chunk chunk) {
+    public static void listGroups(Faction playerFaction, Player player) {
+		player.sendMessage(ChatColor.AQUA + "All groups in your faction: ");
+		for (int i = 0 ; i < playerFaction.getGroups().size(); i++) {
+			player.sendMessage(ChatColor.WHITE +""+ (i + 1)+"." + ChatColor.LIGHT_PURPLE + playerFaction.getGroups().get(i).getName());
+		}
+	}
+    
+    /**
+     * get landclaim from chunk. 
+     * formerly return landclaim from current location or some crap
+     * @param chunk
+     * @return
+     */
+    public static LandClaim getLandClaimFromChunk(Chunk chunk) {
         for (Faction fac : CustomNations.factions) {
             for (LandClaim landClaim : fac.getClaims()) {
                 if (landClaim.getClaimedChunk().equals(chunk)) {
@@ -412,7 +426,7 @@ public class Helper {
             return;
         }
         
-        lc = returnLandClaimContainingSpecifiedChunk(event.getBlock().getChunk());
+        lc = getLandClaimFromChunk(event.getBlock().getChunk());
         // if the player is not in a faction but the landclaim is owned
         if (fac == null && lc != null) {
         	//cancel event
@@ -466,7 +480,7 @@ public class Helper {
             return;
         }
         
-        lc = returnLandClaimContainingSpecifiedChunk(playerChunk);
+        lc = getLandClaimFromChunk(playerChunk);
         // if the faction is null and the landclaim is not null
         if (playerFac == null && lc != null) {
         	//cancel the event because we know that
@@ -519,7 +533,7 @@ public class Helper {
             return;
         }
         
-        lc = returnLandClaimContainingSpecifiedChunk(event.getBlock().getChunk());
+        lc = getLandClaimFromChunk(event.getBlock().getChunk());
         // if the faction is null and the landclaim is not null
         if (fac == null && lc != null) {
         	//cancel the event because we know that

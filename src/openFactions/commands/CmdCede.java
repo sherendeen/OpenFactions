@@ -111,7 +111,7 @@ public class CmdCede {
 			}
 			
 			Faction recipientFaction = Helper.getFactionByFactionName(extraArguments[1]);
-			LandClaim lc = Helper.returnLandClaimContainingSpecifiedChunk(player.getLocation().getChunk());
+			LandClaim lc = Helper.getLandClaimFromChunk(player.getLocation().getChunk());
 			pi.getPlayerFaction().removeClaim(lc);
 			recipientFaction.addClaim(lc);
 			

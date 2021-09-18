@@ -29,7 +29,7 @@ public class CmdSetRelation {
 		}
 		
 		Faction faction1 = Helper.getPlayerFaction(player.getUniqueId()); 
-		
+		// extraArgument[1] name of the other faction, extraArguments[2] is the new relation
 		if(extraArguments[1].equalsIgnoreCase(faction1.getName()) || Helper.getFactionByFactionName(faction1.getName()) == null) {
 			sender.sendMessage(MsgPrefix.ERR + "That faction name is invalid!");
 			return false;

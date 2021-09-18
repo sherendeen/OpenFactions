@@ -50,7 +50,7 @@ public class CmdSetGroup {
 		}
 		
 		Group group = Helper.getGroupFromFactionByName(extraArguments[1], pi.getPlayerFaction());
-		LandClaim landClaim = Helper.returnLandClaimContainingSpecifiedChunk(player.getLocation().getChunk());
+		LandClaim landClaim = Helper.getLandClaimFromChunk(player.getLocation().getChunk());
 		
 		landClaim.setExclusiveGroup(group);
 		

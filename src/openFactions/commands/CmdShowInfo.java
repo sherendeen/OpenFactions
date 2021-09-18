@@ -5,6 +5,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import openFactions.objects.PlayerInfo;
+import openFactions.util.Helper;
 import openFactions.util.constants.MsgPrefix;
 
 public class CmdShowInfo {
@@ -19,10 +20,8 @@ public class CmdShowInfo {
 			sender.sendMessage(ChatColor.AQUA + "Your faction: " + ChatColor.WHITE + pi.getPlayerFaction().getName());
 			sender.sendMessage(ChatColor.AQUA + "Faction description: " + ChatColor.WHITE + pi.getPlayerFaction().getDesc());
 			
-			sender.sendMessage(ChatColor.AQUA + "All groups in your faction: ");
-			for (int i = 0 ; i < pi.getPlayerFaction().getGroups().size(); i++) {
-				sender.sendMessage(ChatColor.WHITE +""+ (i + 1)+"." + ChatColor.LIGHT_PURPLE + pi.getPlayerFaction().getGroups().get(i).getName());
-			}
+			// list groups within faction
+			Helper.listGroups(pi.getPlayerFaction(), pi.getPlayer());
 			
 		} else {
 			sender.sendMessage(ChatColor.AQUA + "Your faction: " + ChatColor.WHITE + " n/a.");
