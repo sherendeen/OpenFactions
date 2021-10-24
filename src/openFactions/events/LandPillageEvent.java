@@ -20,7 +20,6 @@ public class LandPillageEvent extends Event implements Cancellable{
     Faction pillager;
     Faction pillaged; 
     LandClaim pillagedClaim;
-    
 
     public LandPillageEvent(Faction pillager, Faction pillaged, LandClaim pillagedClaim) {
     	this.pillager = pillager;

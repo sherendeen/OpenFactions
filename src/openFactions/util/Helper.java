@@ -15,11 +15,13 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import openFactions.CustomNations;
 import openFactions.objects.Faction;
 import openFactions.objects.Group;
 import openFactions.objects.LandClaim;
+import openFactions.objects.PlayerInfo;
 import openFactions.objects.Visa;
 import openFactions.objects.Warp;
 import openFactions.objects.enums.Can;
@@ -628,6 +630,12 @@ public class Helper {
         return faction.getRelationships().get(faction.getName());
     }
     
+    /**
+     * NULLABLE ; requires null-check
+     * @param name name of the group
+     * @param fac faction object
+     * @return group (if found)
+     */
     public static Group getGroupFromFactionByName(String name, Faction fac) {
         for (final Group g : fac.getGroups()) {
             if (g.getName().equalsIgnoreCase(name)) {
@@ -636,4 +644,32 @@ public class Helper {
         }
         return null;
     }
+
+    /**
+     * Handle player login event
+     * @param event the event of the player logging into the server
+     */
+	public static void HandlePlayerJoinEvent(PlayerJoinEvent event) {
+		
+		System.out.println(MsgPrefix.DEBUG + "HandlePlayerLogin event function accessed ");
+		
+		Player playerAssociatedWithEvent = event.getPlayer();
+		
+		System.out.println(MsgPrefix.DEBUG + "HandlePlayerLogin event :: player :: " + playerAssociatedWithEvent.getName());
+		
+		PlayerInfo pi = new PlayerInfo(playerAssociatedWithEvent);
+		// if the player is in the faction, we update the 'last loggedin'
+		// faction attribute
+		if (pi.isPlayerInAFaction()) {
+			
+			System.out.println(MsgPrefix.DEBUG + "HandlePlayerLogin event - player is in a faction");
+			
+			Faction faction = pi.getPlayerFaction();
+			// set the latest date of login
+			faction.setDateOfLastLogin(new Date());
+			// not sure if serialization is needed here but we'll do it anyway
+			Faction.serialize(faction, faction.getAutoFileName());
+		}
+		// if the player is not in a faction, no need to do anything
+	}
 }

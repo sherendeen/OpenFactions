@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,7 +36,9 @@ public class Faction implements Serializable {
 
 	private String name;
 	
-	private String dateCreated;
+	private Date dateCreated;
+	private Date dateOfLastLogin;
+	
 	private ArrayList<Visa> visas = new ArrayList<Visa>();
 	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
@@ -62,20 +65,10 @@ public class Faction implements Serializable {
 	private Group defaultGroup;
 	private ArrayList<Group> groups = new ArrayList<Group>(); 
 
-	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claimList) {
-
+	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claims) {
+		
 		this.name = name;
-		this.dateCreated = dateCreated.toString();
-		this.members = members;
-		this.claimList = claimList;
-
-		this.serialUUID = UUID.randomUUID();
-
-	}
-
-	public Faction(String name, String dateCreatedStr, ArrayList<UUID> members, ArrayList<LandClaim> claims) {
-		this.name = name;
-		this.dateCreated = dateCreatedStr;
+		this.dateCreated = dateCreated;
 		this.members = members;
 		this.claimList = claims;
 
@@ -89,7 +82,7 @@ public class Faction implements Serializable {
 	 * @param personWhoCreatedTheFaction self commenting, self explanatory
 	 */
 	public Faction(String name, UUID personWhoCreatedTheFaction) {
-		this.dateCreated = new Date().toString();
+		this.dateCreated = new Date();
 		this.name = name;
 		this.members.add(personWhoCreatedTheFaction);
 		
@@ -194,7 +187,7 @@ public class Faction implements Serializable {
 	 * @author ZettaX
 	 * @return String
 	 */
-	public String getCreationDate() {
+	public Date getCreationDate() {
 		return this.dateCreated;
 	}
 
@@ -378,5 +371,13 @@ public class Faction implements Serializable {
 	
 	public void removeResolution(Resolution resolution) {
 		this.currentResolutions.remove(resolution);
+	}
+
+	public Date getDateOfLastLogin() {
+		return dateOfLastLogin;
+	}
+
+	public void setDateOfLastLogin(Date dateMemberWasLastOnline) {
+		this.dateOfLastLogin = dateMemberWasLastOnline;
 	}
 }

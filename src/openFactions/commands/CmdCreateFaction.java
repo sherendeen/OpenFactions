@@ -1,8 +1,11 @@
 package openFactions.commands;
 
+import java.util.Date;
+
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
+import net.md_5.bungee.api.ChatColor;
 import openFactions.CustomNations;
 import openFactions.objects.Faction;
 import openFactions.util.Helper;
@@ -34,8 +37,10 @@ public class CmdCreateFaction {
 		//get player's unique id
 		Faction faction = new Faction(extraArguments[1], player.getUniqueId());
 		
+		faction.setDateOfLastLogin(new Date());
+		
 		CustomNations.factions.add(faction);
-		sender.sendMessage(MsgPrefix.OK + "You have created " + faction.getName() + ".");
+		sender.sendMessage(MsgPrefix.OK + "You have created [" + ChatColor.WHITE + faction.getName() +ChatColor.RESET+ "].");
 		
 		Faction.serialize(faction, faction.getAutoFileName());
 		

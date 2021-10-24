@@ -5,6 +5,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import openFactions.CustomNations;
 import openFactions.util.Helper;
@@ -16,6 +17,12 @@ public class OpenFactionsListener implements Listener {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
+    
+    @EventHandler
+    public void onLoginEvent(PlayerJoinEvent event) {
+    	Helper.HandlePlayerJoinEvent(event);
+    }
+    
     @EventHandler
     public void LandPillageEvent(LandPillageEvent event) {
     	event.pillageLand();
