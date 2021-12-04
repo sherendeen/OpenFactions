@@ -20,21 +20,23 @@ public class CmdShowInfo {
 			sender.sendMessage(ChatColor.AQUA + "Your faction: " + ChatColor.WHITE + pi.getPlayerFaction().getName());
 			sender.sendMessage(ChatColor.AQUA + "Faction description: " + ChatColor.WHITE + pi.getPlayerFaction().getDesc());
 			
+			// they should be in a group...
+			if (pi.isPlayerInAGroup()) {
+				sender.sendMessage(ChatColor.AQUA + "Your group/division: " + ChatColor.WHITE+ pi.getPlayerGroup().getName());
+			}
+			
 			// list groups within faction
 			Helper.listGroups(pi.getPlayerFaction(), pi.getPlayer());
+			
+			sender.sendMessage("" +ChatColor.LIGHT_PURPLE + ChatColor.ITALIC + "To view your group specific permissions, type ");
+			sender.sendMessage(ChatColor.BLUE + "/" + ChatColor.GREEN + "of showgroup " + ChatColor.GOLD + pi.getPlayerGroup().getName());
+			
 			
 		} else {
 			sender.sendMessage(ChatColor.AQUA + "Your faction: " + ChatColor.WHITE + " n/a.");
 			sender.sendMessage(ChatColor.AQUA + "Faction description: " + ChatColor.WHITE + " n/a");
-			sender.sendMessage(ChatColor.AQUA + "Your group: "+ ChatColor.WHITE + " n/a.");
 			
 		}
-		
-		// they should be in a group...
-		if (pi.isPlayerInAGroup()) {
-			sender.sendMessage(ChatColor.AQUA + "Your group/division: " + ChatColor.WHITE+ pi.getPlayerGroup().getName());
-		}
-		
 		
 		return true;
 	}

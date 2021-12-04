@@ -19,24 +19,28 @@ public class CmdJoinFaction {
 			return false;
 		}
 		
-		//we'll assume that we don't need
-		//an invitation
 		if (Helper.isPlayerInAnyFaction(player.getDisplayName())) {
 			sender.sendMessage(MsgPrefix.ERR + "You cannot join a faction as you are already in one!");
 			return false;
 		} else {
 			for (Faction fac : CustomNations.factions) {
-				if (fac.getName().equalsIgnoreCase(extraArguments[1])) {
+				if (fac.getName().equalsIgnoreCase(extraArguments[1]) && fac.isJoinable()) {
+					
 					fac.addMember(player.getUniqueId());
 					Group def = fac.getDefaultGroup();
-					
+					//why remove it and then re-add it?
 					fac.removeGroup(def);
 					
 					def.addMember(player.getUniqueId());
-					
+					//because we can't alter a group that 
+					//we are actively messing with
 					fac.addGroup(def);
 					
 					sender.sendMessage(MsgPrefix.OK + "You have joined " + fac.getName()+".");
+				} else if (!fac.isJoinable()) {
+					sender.sendMessage(MsgPrefix.ERR +
+							"You cannot join this faction because they require members to be manually added.");
+					break;
 				}
 				
 			}

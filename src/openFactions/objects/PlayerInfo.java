@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.bukkit.entity.Player;
 
+import openFactions.objects.enums.Can;
 import openFactions.util.Helper;
 
 public class PlayerInfo {
@@ -30,6 +31,10 @@ public class PlayerInfo {
 		}
 		
 		this.playerVisas = Helper.getVisasOfPlayer(this.playerUUID);
+	}
+	
+	public ArrayList<Can> getPlayerPermissions() {
+		return this.playerGroup.getGroupPermissions();
 	}
 	
 	public Player getPlayer() {

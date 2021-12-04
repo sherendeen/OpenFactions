@@ -156,14 +156,16 @@ public class Helper {
         		Can.PROPOSE_RESOLUTION,
         		Can.SET_FACTION_WARP,
         		Can.VOTE,
-        		Can.USE_FACTION_WARP);
+        		Can.USE_FACTION_WARP,
+        		Can.OPEN_CONTAINERS, Can.ADD_PLAYERS, Can.TOGGLE_JOINABLE);
     }
     
     public static Group createCommonGroup() {
         return new Group("common", false, Period.ZERO, false, 1,  
         		Can.CHANGE_FACTION_DESC,
         		Can.EDIT_CLAIM,
-        		Can.USE_FACTION_WARP
+        		Can.USE_FACTION_WARP,
+        		Can.OPEN_CONTAINERS
         );
     }
     
@@ -462,14 +464,24 @@ public class Helper {
     
     public static void HandlePlayerEvent(InventoryOpenEvent event) {
     	Player player = (Player) event.getPlayer();
-    	Chunk playerChunk = event.getPlayer().getLocation().getChunk();
-    	Faction playerFac = null;
-    	LandClaim lc = null;
-    	//If the inventory is the player's own inventory, carry on. 
     	
-    	if(event.getInventory().getType() == InventoryType.PLAYER) {
+    	//this would have been the chunk that the player was sitting in
+    	//but not the chunk that the player was necessarily interacting with
+    	//Chunk playerChunk = event.getPlayer().getLocation().getChunk();
+    	
+    	Chunk interactionChunk = null; 
+    	if ( event.getInventory().getType() != InventoryType.PLAYER) {
+    		interactionChunk = event.getInventory().getLocation().getChunk();
+    		
+    		System.out.println(MsgPrefix.DEBUG + "interactionChunk got chunk coordinates: X: " + interactionChunk.getX() + ", Z: " +interactionChunk.getZ());
+    		System.out.println(MsgPrefix.DEBUG + "interactionChunk got getInventory().getType(): " + event.getInventory().getType().name() );
+    	} else {
+    		//If the inventory is the player's own inventory, carry on. 
     		return;
     	}
+    	
+    	Faction playerFac = null;
+    	LandClaim lc = null;
     	
     	//if the player is in a faction.. get their faction
         if (isPlayerInAnyFaction(player.getDisplayName())) {
@@ -478,13 +490,19 @@ public class Helper {
         //if the specified chunk is NOT inside a faction
         //then we stop any further checks and
         //the event is not cancelled!
-        if (!isSpecifiedChunkInsideAnyFaction(playerChunk)) {
+        if (!isSpecifiedChunkInsideAnyFaction(interactionChunk)) {
             return;
         }
         
-        lc = getLandClaimFromChunk(playerChunk);
+        lc = getLandClaimFromChunk(interactionChunk);
         // if the faction is null and the landclaim is not null
         if (playerFac == null && lc != null) {
+        	
+        	System.out.println(MsgPrefix.DEBUG + "player faction is null; landclaim is not.");
+        	
+        	System.out.println(MsgPrefix.DEBUG + "landclaim information: x: " + lc.getChunkX() + ", z: " + lc.getChunkZ());
+        	
+        	
         	//cancel the event because we know that
         	//the land is owned by someone but the player is not
         	//in a faction that could possibly interact with it
@@ -494,11 +512,19 @@ public class Helper {
         Group playerGroup = getGroupPlayerIsIn(playerFac, player.getUniqueId());
         //if this faction is not among the list of factions which possess
         //this given claim
+        
+        
+        
         if (!returnFactionObjectsWhereClaimIsFoundIn(lc).contains(playerFac)) {
+        	
+        	System.out.println(MsgPrefix.DEBUG + "there is no faction object with this landclaim (LC) ");
+        	
         	//then cancel the event
             event.setCancelled(true);
             return;
         }
+        
+        System.out.println(MsgPrefix.DEBUG + "confirmed player faction where claim is found: " + returnFactionObjectsWhereClaimIsFoundIn(lc).contains(playerFac));
         
         // if the landclaim's exclusive group is NOT NULL
         // and it does not equal that of the player group
@@ -508,12 +534,16 @@ public class Helper {
         		!doesGroupHavePermission(Can.OVERRIDE_CLAIM_SETTINGS, playerGroup)) {
             // then we cancel the event
             event.setCancelled(true);
+            
+            System.out.println(MsgPrefix.DEBUG + "Player does not have override permission to interact with this non-player inventory");
+            
             return;
         }
         
         // if the player group DOES NOT have the open_containers permission
         if (!doesGroupHavePermission(Can.OPEN_CONTAINERS, playerGroup)) {
         	//then we cancel the event
+        	System.out.println(MsgPrefix.DEBUG + "Player does not have OPEN_CONTAINERS permission to interact with this non-player inventory");
             event.setCancelled(true);
         }
         

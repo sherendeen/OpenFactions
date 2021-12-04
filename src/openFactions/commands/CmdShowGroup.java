@@ -40,7 +40,18 @@ public class CmdShowGroup {
 			sender.sendMessage(ChatColor.AQUA + "Group name: " + ChatColor.WHITE + group.getName());
 			sender.sendMessage(ChatColor.AQUA + "Number of members: " + ChatColor.WHITE + group.getMembers().size());
 			sender.sendMessage(ChatColor.AQUA + "Is this the default group? " + ((fac.getDefaultGroup().equals(group)) ? ChatColor.GREEN + "Yes": ChatColor.RED + "No"));
-			sender.sendMessage(ChatColor.AQUA + "Group permissions: " +ChatColor.RESET+ group.getGroupPermissions().toString());
+//			sender.sendMessage(ChatColor.AQUA + "Group permissions: " +ChatColor.RESET+ group.getGroupPermissions().toString());
+			sender.sendMessage(""+ChatColor.ITALIC + ChatColor.GRAY+  "[");
+			final int n = pi.getPlayerGroup().getGroupPermissions().size();
+			
+			for (int i = 0 ; i < n; i++) {
+				sender.sendMessage(ChatColor.BLUE + 
+						pi.getPlayerGroup().getGroupPermissions().get(i).name() 
+						+ ((i==(n-1)) ? "" + ChatColor.WHITE + "," : "")
+						);
+				
+			}
+			sender.sendMessage(""+ChatColor.ITALIC + ChatColor.GRAY+  "]");
 		}
 		
 		return true;

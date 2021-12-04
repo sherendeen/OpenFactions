@@ -41,6 +41,8 @@ public class CommandCore implements CommandExecutor {
 	private CmdPillage cmdPillage = new CmdPillage();
 	private CmdCede cmdCede = new CmdCede();
 	private CmdSetGroup cmdSetGroup = new CmdSetGroup();
+	private CmdToggleJoinable cmdToggleJoinable = new CmdToggleJoinable();
+	private CmdAddMember cmdAddMember = new CmdAddMember();
 	
 	private OFCmdDiplomacy ofCmdDiplomacy = new OFCmdDiplomacy();
 	
@@ -71,6 +73,11 @@ public class CommandCore implements CommandExecutor {
 		Helper.dateFormat.setLenient(false);
 		// check subcommands
 		switch (extraArguments[0].toLowerCase()) {
+		case "addmember":
+		case "add":
+			
+			return cmdAddMember.handle(sender,extraArguments);
+			
 		case "addpermission":
 		case "ap":
 			
@@ -153,6 +160,12 @@ public class CommandCore implements CommandExecutor {
 		case "info":
 			
 			return cmdShowInfo.handle(sender);
+			
+		case "makejoinable":
+		case "togglejoinable":
+		case "setjoinable":
+			
+			return cmdToggleJoinable.handle(sender, extraArguments);
 			
 		case "show":
 			return cmdShowFactionInfo.handle(sender, extraArguments);

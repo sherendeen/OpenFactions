@@ -65,6 +65,13 @@ public class Faction implements Serializable {
 	private Group defaultGroup;
 	private ArrayList<Group> groups = new ArrayList<Group>(); 
 
+	/**
+	 * if true, players may join the faction without being manually added
+	 * by a faction member. OFF by default.
+	 * Can be toggled with /of joinable
+	 */
+	private boolean isJoinable = false;
+	
 	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claims) {
 		
 		this.name = name;
@@ -379,5 +386,13 @@ public class Faction implements Serializable {
 
 	public void setDateOfLastLogin(Date dateMemberWasLastOnline) {
 		this.dateOfLastLogin = dateMemberWasLastOnline;
+	}
+
+	public boolean isJoinable() {
+		return isJoinable;
+	}
+
+	public void setJoinable(boolean isJoinable) {
+		this.isJoinable = isJoinable;
 	}
 }

@@ -42,10 +42,6 @@ public class LandPillageEvent extends Event implements Cancellable{
         		  System.out.println();
         		  System.out.println(MsgPrefix.DEBUG + pillagedClaim.toString());
         		  
-//        		  
-//        		  pillager.getClaims().add(pillagedClaim);
-//        		  pillaged.getClaims().remove(pillagedClaim);
-//        		  
         		  pillager.addClaim(pillagedClaim);
         		  pillaged.removeClaim(pillagedClaim);
         		  
