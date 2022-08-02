@@ -1,25 +1,74 @@
 package openFactions.util;
 
+import java.text.SimpleDateFormat;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import openFactions.CustomNations;
 import openFactions.objects.Faction;
 import openFactions.objects.Group;
 import openFactions.objects.LandClaim;
+import openFactions.objects.PlayerInfo;
 import openFactions.objects.Visa;
+import openFactions.objects.Warp;
 import openFactions.objects.enums.Can;
 import openFactions.objects.enums.RelationshipType;
+import openFactions.util.constants.MsgPrefix;
 
 public class Helper {
+	
+	public static SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+	
+	public static boolean isValid(CommandSender sender, String[] extraArguments) {
+		Player player = (Player) sender;
+		
+		if (player == null) { 
+			sender.sendMessage(MsgPrefix.ERR +"You cannot issue this command as console.");
+			return false; 
+		}
+		
+		if (extraArguments.length < 3) {
+			sender.sendMessage(MsgPrefix.ERR + "Insufficient number of arguments.");
+			return false;
+		}
+		
+		if (!Helper.isPlayerInAnyFaction(player.getDisplayName())) {
+			sender.sendMessage(MsgPrefix.ERR +"You are not in a faction.");
+			return false;
+		} 
+		return true;
+	}
+	
+	/**
+	 * if the sender is an instanceof player,
+	 *  cast it as a player, otherwise
+	 * leave player object as null
+	 * @param sender commandSender
+	 * @return player object that might be null
+	 */
+	public static Player validateCommandSender(CommandSender sender) {
+		Player player ;
+		if ( !( sender instanceof Player )) {
+			player = null;
+		} else {
+			player = (Player) sender;
+		}
+		return player;
+	}
+	
 	public static boolean isSpecifiedLandClaimInsideAnyFaction(LandClaim lc) {
         for (Faction fac : CustomNations.factions) {
             for (LandClaim landClaim : fac.getClaims()) {
@@ -54,7 +103,20 @@ public class Helper {
         return result;
     }
     
-    public static LandClaim returnLandClaimContainingSpecifiedChunk(Chunk chunk) {
+    public static void listGroups(Faction playerFaction, Player player) {
+		player.sendMessage(ChatColor.AQUA + "All groups in your faction: ");
+		for (int i = 0 ; i < playerFaction.getGroups().size(); i++) {
+			player.sendMessage(ChatColor.WHITE +""+ (i + 1)+"." + ChatColor.LIGHT_PURPLE + playerFaction.getGroups().get(i).getName());
+		}
+	}
+    
+    /**
+     * get landclaim from chunk. 
+     * formerly return landclaim from current location or some crap
+     * @param chunk
+     * @return
+     */
+    public static LandClaim getLandClaimFromChunk(Chunk chunk) {
         for (Faction fac : CustomNations.factions) {
             for (LandClaim landClaim : fac.getClaims()) {
                 if (landClaim.getClaimedChunk().equals(chunk)) {
@@ -81,7 +143,7 @@ public class Helper {
         return new Group("admin", false, Period.ZERO, false, 1, Can.ASSIGN_GROUPS, 
         		Can.CHANGE_FACTION_DESC,
         		Can.CHANGE_FACTION_NAME,
-        		Can.CLAIM, Can.DISBAND, 
+        		Can.CLAIM, Can.CEDE, Can.DISBAND, 
         		Can.EDIT_CLAIM,
         		Can.EDIT_CLAIM_SETTINGS, 
         		Can.EDIT_GROUPS,
@@ -90,13 +152,20 @@ public class Helper {
         		Can.SET_RELATION, 
         		Can.SET_VISA, 
         		Can.UNCLAIM,
-        		Can.UNCLAIM_ALL );
+        		Can.UNCLAIM_ALL,
+        		Can.PROPOSE_RESOLUTION,
+        		Can.SET_FACTION_WARP,
+        		Can.VOTE,
+        		Can.USE_FACTION_WARP,
+        		Can.OPEN_CONTAINERS, Can.ADD_PLAYERS, Can.TOGGLE_JOINABLE);
     }
     
     public static Group createCommonGroup() {
         return new Group("common", false, Period.ZERO, false, 1,  
         		Can.CHANGE_FACTION_DESC,
-        		Can.EDIT_CLAIM 
+        		Can.EDIT_CLAIM,
+        		Can.USE_FACTION_WARP,
+        		Can.OPEN_CONTAINERS
         );
     }
     
@@ -116,6 +185,72 @@ public class Helper {
             }
         }
         return false;
+    }
+    
+    public static boolean warpExists(final String warpStr, final Faction fac) {
+    	
+    	for(Warp warp : fac.getWarps()) {
+    		if (warp.getWarpName().equalsIgnoreCase(warpStr)) {
+    			return true;
+    		}
+    	}
+    	
+    	return false;
+    }
+    
+    /**
+     * returns applicable warp by its name
+     * @param warpStr specified warp name
+     * @param fac the faction in which to look
+     * @return the warp, OR NULL
+     */
+    public static Warp getWarpByName(final String warpStr, final Faction fac) {
+    	
+    	for(Warp warp : fac.getWarps()) {
+    		if (warp.getWarpName().equalsIgnoreCase(warpStr)) {
+    			return warp;
+    		}
+    	}
+    	
+    	return null;
+    }
+    
+    public static String formatPermissionsArrayToString(final Can... permissions) {
+    	String result = "";
+    	for (int i = 0 ; i < permissions.length; i++) {
+    		result += permissions[i].toString();
+    	}
+    	return result;
+    }
+    
+    public static String formatPermissionsArrayToString(final ArrayList<Can> permissions) {
+    	String result = ":";
+    	
+    	for (Can can : permissions) {
+    		result += can.toString() + ":";
+    	}
+    	
+    	return result;
+    }
+    
+    /**
+     * Returns any and all groups that have a specific permission within a faction
+     * @param fac faction in question
+     * @param can permission
+     * @return any groups that have that permission
+     */
+    public static ArrayList<Group> getGroupsByPermission(final Faction fac, 
+    		final Can can) {
+    	// groups to be returned
+    	ArrayList<Group> groups = new ArrayList<Group>();
+    	// if a group within a faction has a permission
+    	for(Group g : fac.getGroups()) {
+    		if (g.hasPermission(can)) {
+    			groups.add(g);//add it to the returned list
+    		}
+    	}
+    	
+    	return groups;
     }
     
     public static Group removeAllMembersFromGroup(Group group) {
@@ -178,7 +313,21 @@ public class Helper {
         return -1;
     }
     
-    public static Faction returnFactionThatPlayerIsIn(final UUID playerUUID) {
+    /**
+     * Alias of `returnFactionThatPlayerIsIn`
+     * @param playerUUID
+     * @return
+     */
+//    public static Faction getPlayerFaction(final UUID playerUUID) {
+//    	return returnFactionThatPlayerIsIn(playerUUID);
+//    }
+    
+    /**
+     * Return faction object that player is in 
+     * @param playerUUID player uuid
+     * @return the faction object, or null
+     */
+    public static Faction getPlayerFaction(final UUID playerUUID) {
         for (final Faction fac : CustomNations.factions) {
             for (final UUID member : fac.getMembers()) {
                 if (member.equals(playerUUID)) {
@@ -271,7 +420,7 @@ public class Helper {
         Faction fac = null;
         // check to see if the player is even in a faction
         if (isPlayerInAnyFaction(player.getDisplayName())) {
-            fac = returnFactionThatPlayerIsIn(player.getUniqueId());
+            fac = getPlayerFaction(player.getUniqueId());
         }
         
         LandClaim lc = null;
@@ -281,7 +430,7 @@ public class Helper {
             return;
         }
         
-        lc = returnLandClaimContainingSpecifiedChunk(event.getBlock().getChunk());
+        lc = getLandClaimFromChunk(event.getBlock().getChunk());
         // if the player is not in a faction but the landclaim is owned
         if (fac == null && lc != null) {
         	//cancel event
@@ -313,12 +462,99 @@ public class Helper {
     	
     }
     
+    public static void HandlePlayerEvent(InventoryOpenEvent event) {
+    	Player player = (Player) event.getPlayer();
+    	
+    	//this would have been the chunk that the player was sitting in
+    	//but not the chunk that the player was necessarily interacting with
+    	//Chunk playerChunk = event.getPlayer().getLocation().getChunk();
+    	
+    	Chunk interactionChunk = null; 
+    	if ( event.getInventory().getType() != InventoryType.PLAYER) {
+    		interactionChunk = event.getInventory().getLocation().getChunk();
+    		
+    		System.out.println(MsgPrefix.DEBUG + "interactionChunk got chunk coordinates: X: " + interactionChunk.getX() + ", Z: " +interactionChunk.getZ());
+    		System.out.println(MsgPrefix.DEBUG + "interactionChunk got getInventory().getType(): " + event.getInventory().getType().name() );
+    	} else {
+    		//If the inventory is the player's own inventory, carry on. 
+    		return;
+    	}
+    	
+    	Faction playerFac = null;
+    	LandClaim lc = null;
+    	
+    	//if the player is in a faction.. get their faction
+        if (isPlayerInAnyFaction(player.getDisplayName())) {
+            playerFac = getPlayerFaction(player.getUniqueId());
+        }
+        //if the specified chunk is NOT inside a faction
+        //then we stop any further checks and
+        //the event is not cancelled!
+        if (!isSpecifiedChunkInsideAnyFaction(interactionChunk)) {
+            return;
+        }
+        
+        lc = getLandClaimFromChunk(interactionChunk);
+        // if the faction is null and the landclaim is not null
+        if (playerFac == null && lc != null) {
+        	
+        	System.out.println(MsgPrefix.DEBUG + "player faction is null; landclaim is not.");
+        	
+        	System.out.println(MsgPrefix.DEBUG + "landclaim information: x: " + lc.getChunkX() + ", z: " + lc.getChunkZ());
+        	
+        	
+        	//cancel the event because we know that
+        	//the land is owned by someone but the player is not
+        	//in a faction that could possibly interact with it
+            event.setCancelled(true);
+            return;
+        }
+        Group playerGroup = getGroupPlayerIsIn(playerFac, player.getUniqueId());
+        //if this faction is not among the list of factions which possess
+        //this given claim
+        
+        
+        
+        if (!returnFactionObjectsWhereClaimIsFoundIn(lc).contains(playerFac)) {
+        	
+        	System.out.println(MsgPrefix.DEBUG + "there is no faction object with this landclaim (LC) ");
+        	
+        	//then cancel the event
+            event.setCancelled(true);
+            return;
+        }
+        
+        System.out.println(MsgPrefix.DEBUG + "confirmed player faction where claim is found: " + returnFactionObjectsWhereClaimIsFoundIn(lc).contains(playerFac));
+        
+        // if the landclaim's exclusive group is NOT NULL
+        // and it does not equal that of the player group
+        // and the player group does not have permission to override claim settings
+        if (lc.getExclusiveGroup() != null && 
+        		!lc.getExclusiveGroup().equals(playerGroup) && 
+        		!doesGroupHavePermission(Can.OVERRIDE_CLAIM_SETTINGS, playerGroup)) {
+            // then we cancel the event
+            event.setCancelled(true);
+            
+            System.out.println(MsgPrefix.DEBUG + "Player does not have override permission to interact with this non-player inventory");
+            
+            return;
+        }
+        
+        // if the player group DOES NOT have the open_containers permission
+        if (!doesGroupHavePermission(Can.OPEN_CONTAINERS, playerGroup)) {
+        	//then we cancel the event
+        	System.out.println(MsgPrefix.DEBUG + "Player does not have OPEN_CONTAINERS permission to interact with this non-player inventory");
+            event.setCancelled(true);
+        }
+        
+    }
+    
     public static void HandlePlayerEvent(BlockPlaceEvent event) {
     	Player player = event.getPlayer();
         Faction fac = null;
         //if the player is in a faction.. get their faction
         if (isPlayerInAnyFaction(player.getDisplayName())) {
-            fac = returnFactionThatPlayerIsIn(player.getUniqueId());
+            fac = getPlayerFaction(player.getUniqueId());
         }
         
         LandClaim lc = null;
@@ -329,7 +565,7 @@ public class Helper {
             return;
         }
         
-        lc = returnLandClaimContainingSpecifiedChunk(event.getBlock().getChunk());
+        lc = getLandClaimFromChunk(event.getBlock().getChunk());
         // if the faction is null and the landclaim is not null
         if (fac == null && lc != null) {
         	//cancel the event because we know that
@@ -424,6 +660,12 @@ public class Helper {
         return faction.getRelationships().get(faction.getName());
     }
     
+    /**
+     * NULLABLE ; requires null-check
+     * @param name name of the group
+     * @param fac faction object
+     * @return group (if found)
+     */
     public static Group getGroupFromFactionByName(String name, Faction fac) {
         for (final Group g : fac.getGroups()) {
             if (g.getName().equalsIgnoreCase(name)) {
@@ -432,4 +674,32 @@ public class Helper {
         }
         return null;
     }
+
+    /**
+     * Handle player login event
+     * @param event the event of the player logging into the server
+     */
+	public static void HandlePlayerJoinEvent(PlayerJoinEvent event) {
+		
+		System.out.println(MsgPrefix.DEBUG + "HandlePlayerLogin event function accessed ");
+		
+		Player playerAssociatedWithEvent = event.getPlayer();
+		
+		System.out.println(MsgPrefix.DEBUG + "HandlePlayerLogin event :: player :: " + playerAssociatedWithEvent.getName());
+		
+		PlayerInfo pi = new PlayerInfo(playerAssociatedWithEvent);
+		// if the player is in the faction, we update the 'last loggedin'
+		// faction attribute
+		if (pi.isPlayerInAFaction()) {
+			
+			System.out.println(MsgPrefix.DEBUG + "HandlePlayerLogin event - player is in a faction");
+			
+			Faction faction = pi.getPlayerFaction();
+			// set the latest date of login
+			faction.setDateOfLastLogin(new Date());
+			// not sure if serialization is needed here but we'll do it anyway
+			Faction.serialize(faction, faction.getAutoFileName());
+		}
+		// if the player is not in a faction, no need to do anything
+	}
 }

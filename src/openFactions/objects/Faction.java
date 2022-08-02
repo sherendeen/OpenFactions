@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,15 +29,26 @@ import openFactions.util.Helper;
 
 public class Faction implements Serializable {
 
+	/**
+	 * serial version of this faction object and related objects
+	 */
+	private static final long serialVersionUID = 901448862403914419L;
+
 	private String name;
 	
-	private String dateCreated;
+	private Date dateCreated;
+	private Date dateOfLastLogin;
+	
 	private ArrayList<Visa> visas = new ArrayList<Visa>();
 	private String desc;
 	private ArrayList<UUID> members = new ArrayList<UUID>();
 	
+	private ArrayList<Warp> warps = new ArrayList<Warp>();
+	
 	private HashMap<String, RelationshipType> relationships = new HashMap<String, RelationshipType>(); 
 
+	private ArrayList<Resolution> currentResolutions = new ArrayList<Resolution>();
+	
 	/** 
 	 * List of land claims made by this faction.
 	 * Encapsulates chunk coordinates, string descriptors, and 
@@ -53,20 +65,17 @@ public class Faction implements Serializable {
 	private Group defaultGroup;
 	private ArrayList<Group> groups = new ArrayList<Group>(); 
 
-	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claimList) {
-
+	/**
+	 * if true, players may join the faction without being manually added
+	 * by a faction member. OFF by default.
+	 * Can be toggled with /of joinable
+	 */
+	private boolean isJoinable = false;
+	
+	public Faction(String name, Date dateCreated, ArrayList<UUID> members, ArrayList<LandClaim> claims) {
+		
 		this.name = name;
-		this.dateCreated = dateCreated.toString();
-		this.members = members;
-		this.claimList = claimList;
-
-		this.serialUUID = UUID.randomUUID();
-
-	}
-
-	public Faction(String name, String dateCreatedStr, ArrayList<UUID> members, ArrayList<LandClaim> claims) {
-		this.name = name;
-		this.dateCreated = dateCreatedStr;
+		this.dateCreated = dateCreated;
 		this.members = members;
 		this.claimList = claims;
 
@@ -80,7 +89,7 @@ public class Faction implements Serializable {
 	 * @param personWhoCreatedTheFaction self commenting, self explanatory
 	 */
 	public Faction(String name, UUID personWhoCreatedTheFaction) {
-		this.dateCreated = new Date().toString();
+		this.dateCreated = new Date();
 		this.name = name;
 		this.members.add(personWhoCreatedTheFaction);
 		
@@ -165,7 +174,7 @@ public class Faction implements Serializable {
 
 	@Override
 	public String toString() {
-		return "name:" + name + ", dateCreated: " + dateCreated + ", members=" + Helper.returnListOfNames(this.members) + ", claimList: {"
+		return "name:" + name + ", description: " + desc + ", dateCreated: " + dateCreated + ", members=" + Helper.returnListOfNames(this.members) + ", claimList: {"
 				+ Helper.getArrayListOfCoordinates(this.claimList) + "}, groups: " + getListOfGroupNames(groups) + ", default group upon joining: "+this.defaultGroup.getName();
 	}
 
@@ -185,7 +194,7 @@ public class Faction implements Serializable {
 	 * @author ZettaX
 	 * @return String
 	 */
-	public String getCreationDate() {
+	public Date getCreationDate() {
 		return this.dateCreated;
 	}
 
@@ -252,7 +261,7 @@ public class Faction implements Serializable {
 	}
 	
 	public String getAutoFileName() {
-		return "faction_" + getSerialUUID() + "_.fbin";
+		return "OpenFactions/faction_" + getSerialUUID() + "_.fbin";
 	}
 
 	/**
@@ -337,5 +346,53 @@ public class Faction implements Serializable {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public ArrayList<Warp> getWarps() {
+		return warps;
+	}
+
+	public void setWarps(ArrayList<Warp> warps) {
+		this.warps = warps;
+	}
+	
+	public void addWarp(Warp warp) {
+		this.warps.add(warp);
+	}
+	
+	public void removeWarp(Warp warp) {
+		this.warps.remove(warp);
+	}
+
+	public ArrayList<Resolution> getCurrentResolutions() {
+		return currentResolutions;
+	}
+
+	public void setCurrentResolutions(ArrayList<Resolution> currentResolutions) {
+		this.currentResolutions = currentResolutions;
+	}
+	
+	public void addResolution(Resolution resolution) {
+		this.currentResolutions.add(resolution);
+	}
+	
+	public void removeResolution(Resolution resolution) {
+		this.currentResolutions.remove(resolution);
+	}
+
+	public Date getDateOfLastLogin() {
+		return dateOfLastLogin;
+	}
+
+	public void setDateOfLastLogin(Date dateMemberWasLastOnline) {
+		this.dateOfLastLogin = dateMemberWasLastOnline;
+	}
+
+	public boolean isJoinable() {
+		return isJoinable;
+	}
+
+	public void setJoinable(boolean isJoinable) {
+		this.isJoinable = isJoinable;
 	}
 }

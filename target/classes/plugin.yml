@@ -1,0 +1,17 @@
+name: OpenFactions
+version: 0.2.4.1
+api-version: 1.17
+main: openFactions.CustomNations
+authors: [ZettaX, Inivican]
+description: A better, more modular version of factions
+commands:
+   of:
+      description: Main command.
+      usage: /of [args]
+      permission: of.main
+      permission-message: You're not allowed to use this command.
+   ofw:
+      description: warp command
+      usage: /ofw [args]
+      permission: ofw.teleport
+      permission-message: You are not allowed to warp.

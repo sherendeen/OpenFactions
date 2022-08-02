@@ -1,5 +1,5 @@
 /** 
- Copyright (C) 2018-2020 Seth Herendeen; Samuel Inciarte
+ Copyright (C) 2018, 2019, 2020, 2021 Seth Herendeen; Samuel Inciarte
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,11 +16,16 @@ package openFactions;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import openFactions.commands.CommandCore;
+import openFactions.commands.WarpCommandHandler;
+import openFactions.events.OpenFactionsListener;
 import openFactions.objects.Faction;
 import openFactions.objects.LandClaim;
 
@@ -31,11 +36,19 @@ import openFactions.objects.LandClaim;
  */
 public class CustomNations extends JavaPlugin{
 	
+	//private CommandCore cmdCore;
+	
 	public static ArrayList<Faction> factions = new ArrayList<Faction>(); 
 	
-	private EventListener ev;
+	private OpenFactionsListener ev;
 	
 	private World w ;
+	/**
+	 * @deprecated use of getWorld() is bad since we can refer to whatever world the player is on
+	 * maybe this is useful for something still but I doubt it
+	 * @author Seth 
+	 * @return get's the server world reference called "world"
+	 */
 	public World getWorld() {
 		return this.w;
 	}
@@ -43,16 +56,47 @@ public class CustomNations extends JavaPlugin{
 	@Override
 	public void onEnable() {
 		
+		// SETUP COMMANDS
+		//this.getCommand("of").setExecutor(new Commands(this));
+		this.getCommand("of").setExecutor(new CommandCore(this));
+		this.getCommand("ofw").setExecutor(new WarpCommandHandler(this));
 		
-		this.getCommand("of").setExecutor(new Commands(this));
-
-		ArrayList<String> paths = new ArrayList<String>();
-		//TODO: improve this getWorld() so that it isn't hardcoded like this
-		//perhaps make it so that it uses whatever it is configured to use
+		
+		
+		// TODO: improve this getWorld() so that it isn't hardcoded like this
+		// perhaps make it so that it uses whatever it is configured to use.
+		// 
+		// this.w refers to ``public World getWorld()`` which is now deprecated
 		this.w = getServer().getWorld("world");
 		
+		Path testablePath = Paths.get(System.getProperty("user.dir") + "/OpenFactions/");
+		
+		// if the OpenFactions directory even exists, then do XYZ
+		if ( Files.exists(testablePath) )  {
+			//extracted methods
+			deserialize();
+		} else {
+			// if open factions directory does not already exist,
+			// create it.
+			System.out.println("Creating OpenFactions directory...");
+			boolean ofdir = new File("OpenFactions").mkdir();
+			if (ofdir == true) {
+				System.out.println("OpenFactions directory successfuly created.");
+			}
+			else {
+				System.out.println("Unable to create OpenFactions directory, perhaps one already exists?");
+			}
+		}
+		System.out.println("Done with chunks.");
+		System.out.println("Starting event listener...");
+		this.ev = new OpenFactionsListener(this);
+	}
+
+	private void deserialize() {
+		ArrayList<String> paths = new ArrayList<String>();
 		try {
-			Files.list(new File(System.getProperty("user.dir")).toPath()).forEach(path ->{
+			Files.list(new File(System.getProperty("user.dir")+"/OpenFactions/").toPath()).forEach(path ->{
+				System.out.println("PATH:" + path);
 				
 				if (path.toAbsolutePath().toString().endsWith(".fbin")) {
 					System.out.println("*" + path);
@@ -64,24 +108,25 @@ public class CustomNations extends JavaPlugin{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 		System.out.println("Attempting to deserialize...");
 		for (int i = 0; i < paths.size(); i++ ) {
 			CustomNations.factions.add(Faction.deserialize(paths.get(i)));
 		}
+		
+		File f = new File(".");
+		System.out.println(f.getAbsolutePath());
 		
 		System.out.println("Loading saved chunks...");
 		for(Faction fac : CustomNations.factions) {
 			int i = 0;
 			for (LandClaim lc : fac.getClaims()) {
 				i++;
-				System.out.println(i +"# Setting claimed chunk @ [X " +lc.getChunkX() + ", Z " + lc.getChunkZ() +"]");
-				lc.setClaimedChunkFromCoordinates(lc.getChunkX(), lc.getChunkZ(), this);
+				System.out.println(i +"# Setting claimed chunk @ [X " +lc.getChunkX() + ", Z " + lc.getChunkZ() +"] on world " + lc.getWorldName());
+				//lc.setClaimedChunkFromCoordinates(lc.getChunkX(), lc.getChunkZ(), this);
+				lc.setClaimedChunkFromCoordinates(lc.getChunkX(), lc.getChunkZ(), lc.getWorldName());
 			}
 		}
-		System.out.println("Done with chunks.");
-		System.out.println("Starting event listener...");
-		this.ev = new EventListener(this);
-			
 	}
 	
 	/**
